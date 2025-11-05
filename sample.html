@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUPREME</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+        
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Work Sans', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        
+        .supreme {
+            font-size: 48px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 8px;
+            animation: fadeAway 3s ease-in-out forwards;
+            text-align: center;
+            line-height: 1;
+            padding: 40px;
+            border: 2px solid #ff0000;
+            position: absolute;
+        }
+        
+        .country-box {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease-in-out forwards;
+            width: 100%;
+            max-width: 500px;
+            padding: 0 20px;
+        }
+        
+        .country-box h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 20px;
+            margin-bottom: 15px;
+            background: black;
+            color: white;
+            border: 2px solid #ff0000;
+            font-family: 'Work Sans', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            background: #111;
+            border-color: #fff;
+        }
+        
+        .search-input::placeholder {
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .country-select {
+            background-color: black;
+            color: white;
+            border: 2px solid white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Work Sans', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+        
+        .country-select:hover {
+            background-color: #111;
+            border-color: #666;
+        }
+        
+        .country-select:focus {
+            outline: none;
+            border-color: #ff0000;
+            background-color: #222;
+        }
+        
+        .country-select option {
+            background-color: black;
+            color: white;
+            padding: 10px;
+        }
+        
+        .flag-container {
+            margin-top: 20px;
+            min-height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .flag-container img {
+            width: 60px;
+            height: auto;
+            border: 1px solid #333;
+            margin-bottom: 10px;
+        }
+        
+        .country-name {
+            font-size: 16px;
+            color: #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .detected-country {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            min-height: 20px;
+        }
+        
+        .location-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .location-btn {
+            background: black;
+            color: white;
+            border: 1px solid #ff0000;
+            padding: 8px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            font-family: 'Work Sans', sans-serif;
+        }
+        
+        .location-btn:hover {
+            background: #ff0000;
+            color: black;
+        }
+        
+        .location-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .location-btn:disabled:hover {
+            background: black;
+            color: white;
+        }
+        
+        .continue-btn {
+            background: #ff0000;
+            color: black;
+            border: 1px solid #ff0000;
+            padding: 12px 30px;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s ease;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 600;
+            margin-top: 20px;
+            display: none;
+            width: 100%;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .continue-btn:hover {
+            background: #cc0000;
+            border-color: #cc0000;
+        }
+        
+        .continue-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        
+        .success-message {
+            color: #00ff00;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        .error-message {
+            color: #ff4444;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+        
+        @keyframes fadeAway {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .shake {
+            animation: shake 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="supreme">THIS IS SUPREME</div>
+    <div class="country-box" id="countryBox">
+        <h2>Select Your Country</h2>
+        <select class="country-select" id="countrySelect" onchange="showFlag(this)">
+            <option value="">Choose a country</option>
+        </select>
+        <div class="flag-container" id="flagContainer"></div>
+        <div class="detected-country" id="detectedCountry"></div>
+        <div class="location-buttons">
+            <button class="location-btn" onclick="detectUserCountry()" id="gpsBtn">Detect My Country</button>
+            <button class="location-btn" onclick="useIPLocation()" id="ipBtn">Use IP Location</button>
+        </div>
+        <button class="continue-btn" id="continueBtn" onclick="proceedToSite()">Continue to Supreme</button>
+    </div>
+
+    <script>
+        // Sort countries alphabetically first
+       const countries = [
+            { name: "Afghanistan", lat: 33.93911, lng: 67.709953, code: "af", flag: "https://flagcdn.com/w40/af.png" },
+            { name: "Albania", lat: 41.1533, lng: 20.1683, code: "al", flag: "https://flagcdn.com/w40/al.png" },
+            { name: "Algeria", lat: 28.0339, lng: 1.6596, code: "dz", flag: "https://flagcdn.com/w40/dz.png" },
+            { name: "Andorra", lat: 42.5063, lng: 1.5218, code: "ad", flag: "https://flagcdn.com/w40/ad.png" },
+            { name: "Angola", lat: -11.2027, lng: 17.8739, code: "ao", flag: "https://flagcdn.com/w40/ao.png" },
+            { name: "Antigua and Barbuda", lat: 17.0608, lng: -61.7964, code: "ag", flag: "https://flagcdn.com/w40/ag.png" },
+            { name: "Argentina", lat: -38.4161, lng: -63.6167, code: "ar", flag: "https://flagcdn.com/w40/ar.png" },
+            { name: "Armenia", lat: 40.0691, lng: 45.0382, code: "am", flag: "https://flagcdn.com/w40/am.png" },
+            { name: "Australia", lat: -25.2744, lng: 133.7751, code: "au", flag: "https://flagcdn.com/w40/au.png" },
+            { name: "Austria", lat: 47.5162, lng: 14.5501, code: "at", flag: "https://flagcdn.com/w40/at.png" },
+            { name: "Azerbaijan", lat: 40.1431, lng: 47.5769, code: "az", flag: "https://flagcdn.com/w40/az.png" },
+            { name: "Bahamas", lat: 25.0343, lng: -77.3963, code: "bs", flag: "https://flagcdn.com/w40/bs.png" },
+            { name: "Bahrain", lat: 26.0667, lng: 50.5577, code: "bh", flag: "https://flagcdn.com/w40/bh.png" },
+            { name: "Bangladesh", lat: 23.685, lng: 90.3563, code: "bd", flag: "https://flagcdn.com/w40/bd.png" },
+            { name: "Barbados", lat: 13.1939, lng: -59.5432, code: "bb", flag: "https://flagcdn.com/w40/bb.png" },
+            { name: "Belarus", lat: 53.7098, lng: 27.9534, code: "by", flag: "https://flagcdn.com/w40/by.png" },
+            { name: "Belgium", lat: 50.5039, lng: 4.4699, code: "be", flag: "https://flagcdn.com/w40/be.png" },
+            { name: "Belize", lat: 17.1899, lng: -88.4976, code: "bz", flag: "https://flagcdn.com/w40/bz.png" },
+            { name: "Benin", lat: 9.3077, lng: 2.3158, code: "bj", flag: "https://flagcdn.com/w40/bj.png" },
+            { name: "Bhutan", lat: 27.5142, lng: 90.4336, code: "bt", flag: "https://flagcdn.com/w40/bt.png" },
+            { name: "Bolivia", lat: -16.2902, lng: -63.5887, code: "bo", flag: "https://flagcdn.com/w40/bo.png" },
+            { name: "Bosnia and Herzegovina", lat: 43.9159, lng: 17.6791, code: "ba", flag: "https://flagcdn.com/w40/ba.png" },
+            { name: "Botswana", lat: -22.3285, lng: 24.6849, code: "bw", flag: "https://flagcdn.com/w40/bw.png" },
+            { name: "Brazil", lat: -14.235, lng: -51.9253, code: "br", flag: "https://flagcdn.com/w40/br.png" },
+            { name: "Brunei", lat: 4.5353, lng: 114.7277, code: "bn", flag: "https://flagcdn.com/w40/bn.png" },
+            { name: "Bulgaria", lat: 42.7339, lng: 25.4858, code: "bg", flag: "https://flagcdn.com/w40/bg.png" },
+            { name: "Burkina Faso", lat: 12.2383, lng: -1.5616, code: "bf", flag: "https://flagcdn.com/w40/bf.png" },
+            { name: "Burundi", lat: -3.3731, lng: 29.9189, code: "bi", flag: "https://flagcdn.com/w40/bi.png" },
+            { name: "Cabo Verde", lat: 16.5388, lng: -23.0418, code: "cv", flag: "https://flagcdn.com/w40/cv.png" },
+            { name: "Cambodia", lat: 12.5657, lng: 104.991, code: "kh", flag: "https://flagcdn.com/w40/kh.png" },
+            { name: "Cameroon", lat: 7.3697, lng: 12.3547, code: "cm", flag: "https://flagcdn.com/w40/cm.png" },
+            { name: "Canada", lat: 56.1304, lng: -106.3468, code: "ca", flag: "https://flagcdn.com/w40/ca.png" },
+            { name: "Central African Republic", lat: 6.6111, lng: 20.9394, code: "cf", flag: "https://flagcdn.com/w40/cf.png" },
+            { name: "Chad", lat: 15.4542, lng: 18.7322, code: "td", flag: "https://flagcdn.com/w40/td.png" },
+            { name: "Chile", lat: -35.6751, lng: -71.543, code: "cl", flag: "https://flagcdn.com/w40/cl.png" },
+            { name: "China", lat: 35.8617, lng: 104.1954, code: "cn", flag: "https://flagcdn.com/w40/cn.png" },
+            { name: "Colombia", lat: 4.5709, lng: -74.2973, code: "co", flag: "https://flagcdn.com/w40/co.png" },
+            { name: "Comoros", lat: -11.6455, lng: 43.3333, code: "km", flag: "https://flagcdn.com/w40/km.png" },
+            { name: "Congo", lat: -0.228, lng: 15.8277, code: "cg", flag: "https://flagcdn.com/w40/cg.png" },
+            { name: "Costa Rica", lat: 9.7489, lng: -83.7534, code: "cr", flag: "https://flagcdn.com/w40/cr.png" },
+            { name: "Croatia", lat: 45.1, lng: 15.2, code: "hr", flag: "https://flagcdn.com/w40/hr.png" },
+            { name: "Cuba", lat: 21.5218, lng: -77.7812, code: "cu", flag: "https://flagcdn.com/w40/cu.png" },
+            { name: "Cyprus", lat: 35.1264, lng: 33.4299, code: "cy", flag: "https://flagcdn.com/w40/cy.png" },
+            { name: "Czech Republic", lat: 49.8175, lng: 15.472, code: "cz", flag: "https://flagcdn.com/w40/cz.png" },
+            { name: "Denmark", lat: 56.2639, lng: 9.5018, code: "dk", flag: "https://flagcdn.com/w40/dk.png" },
+            { name: "Djibouti", lat: 11.8251, lng: 42.5903, code: "dj", flag: "https://flagcdn.com/w40/dj.png" },
+            { name: "Dominica", lat: 15.415, lng: -61.371, code: "dm", flag: "https://flagcdn.com/w40/dm.png" },
+            { name: "Dominican Republic", lat: 18.7357, lng: -70.1627, code: "do", flag: "https://flagcdn.com/w40/do.png" },
+            { name: "Ecuador", lat: -1.8312, lng: -78.1834, code: "ec", flag: "https://flagcdn.com/w40/ec.png" },
+            { name: "Egypt", lat: 26.8206, lng: 30.8025, code: "eg", flag: "https://flagcdn.com/w40/eg.png" },
+            { name: "El Salvador", lat: 13.7942, lng: -88.8965, code: "sv", flag: "https://flagcdn.com/w40/sv.png" },
+            { name: "Equatorial Guinea", lat: 1.6508, lng: 10.2679, code: "gq", flag: "https://flagcdn.com/w40/gq.png" },
+            { name: "Eritrea", lat: 15.1794, lng: 39.7823, code: "er", flag: "https://flagcdn.com/w40/er.png" },
+            { name: "Estonia", lat: 58.5953, lng: 25.0136, code: "ee", flag: "https://flagcdn.com/w40/ee.png" },
+            { name: "Eswatini", lat: -26.5225, lng: 31.4659, code: "sz", flag: "https://flagcdn.com/w40/sz.png" },
+            { name: "Ethiopia", lat: 9.145, lng: 40.4897, code: "et", flag: "https://flagcdn.com/w40/et.png" },
+            { name: "Fiji", lat: -17.7134, lng: 178.065, code: "fj", flag: "https://flagcdn.com/w40/fj.png" },
+            { name: "Finland", lat: 61.9241, lng: 25.7482, code: "fi", flag: "https://flagcdn.com/w40/fi.png" },
+            { name: "France", lat: 46.2276, lng: 2.2137, code: "fr", flag: "https://flagcdn.com/w40/fr.png" },
+            { name: "Gabon", lat: -0.8037, lng: 11.6094, code: "ga", flag: "https://flagcdn.com/w40/ga.png" },
+            { name: "Gambia", lat: 13.4432, lng: -15.3101, code: "gm", flag: "https://flagcdn.com/w40/gm.png" },
+            { name: "Georgia", lat: 42.3154, lng: 43.3569, code: "ge", flag: "https://flagcdn.com/w40/ge.png" },
+            { name: "Germany", lat: 51.1657, lng: 10.4515, code: "de", flag: "https://flagcdn.com/w40/de.png" },
+            { name: "Ghana", lat: 7.9465, lng: -1.0232, code: "gh", flag: "https://flagcdn.com/w40/gh.png" },
+            { name: "Greece", lat: 39.0742, lng: 21.8243, code: "gr", flag: "https://flagcdn.com/w40/gr.png" },
+            { name: "Grenada", lat: 12.1165, lng: -61.679, code: "gd", flag: "https://flagcdn.com/w40/gd.png" },
+            { name: "Guatemala", lat: 15.7835, lng: -90.2308, code: "gt", flag: "https://flagcdn.com/w40/gt.png" },
+            { name: "Guinea", lat: 9.9456, lng: -9.6966, code: "gn", flag: "https://flagcdn.com/w40/gn.png" },
+            { name: "Guinea-Bissau", lat: 11.8037, lng: -15.1804, code: "gw", flag: "https://flagcdn.com/w40/gw.png" },
+            { name: "Guyana", lat: 4.8604, lng: -58.9302, code: "gy", flag: "https://flagcdn.com/w40/gy.png" },
+            { name: "Haiti", lat: 18.9712, lng: -72.2852, code: "ht", flag: "https://flagcdn.com/w40/ht.png" },
+            { name: "Honduras", lat: 15.2, lng: -86.2419, code: "hn", flag: "https://flagcdn.com/w40/hn.png" },
+            { name: "Hungary", lat: 47.1625, lng: 19.5033, code: "hu", flag: "https://flagcdn.com/w40/hu.png" },
+            { name: "Iceland", lat: 64.9631, lng: -19.0208, code: "is", flag: "https://flagcdn.com/w40/is.png" },
+            { name: "India", lat: 20.5937, lng: 78.9629, code: "in", flag: "https://flagcdn.com/w40/in.png" },
+            { name: "Indonesia", lat: -0.7893, lng: 113.9213, code: "id", flag: "https://flagcdn.com/w40/id.png" },
+            { name: "Iran", lat: 32.4279, lng: 53.688, code: "ir", flag: "https://flagcdn.com/w40/ir.png" },
+            { name: "Iraq", lat: 33.2232, lng: 43.6793, code: "iq", flag: "https://flagcdn.com/w40/iq.png" },
+            { name: "Ireland", lat: 53.1424, lng: -7.6921, code: "ie", flag: "https://flagcdn.com/w40/ie.png" },
+            { name: "Israel", lat: 31.0461, lng: 34.8516, code: "il", flag: "https://flagcdn.com/w40/il.png" },
+            { name: "Italy", lat: 41.8719, lng: 12.5674, code: "it", flag: "https://flagcdn.com/w40/it.png" },
+            { name: "Jamaica", lat: 18.1096, lng: -77.2975, code: "jm", flag: "https://flagcdn.com/w40/jm.png" },
+            { name: "Japan", lat: 36.2048, lng: 138.2529, code: "jp", flag: "https://flagcdn.com/w40/jp.png" },
+            { name: "Jordan", lat: 30.5852, lng: 36.2384, code: "jo", flag: "https://flagcdn.com/w40/jo.png" },
+            { name: "Kazakhstan", lat: 48.0196, lng: 66.9237, code: "kz", flag: "https://flagcdn.com/w40/kz.png" },
+            { name: "Kenya", lat: -0.0236, lng: 37.9062, code: "ke", flag: "https://flagcdn.com/w40/ke.png" },
+            { name: "Kiribati", lat: -3.3704, lng: -168.734, code: "ki", flag: "https://flagcdn.com/w40/ki.png" },
+            { name: "Korea North", lat: 40.3399, lng: 127.5101, code: "kp", flag: "https://flagcdn.com/w40/kp.png" },
+            { name: "Korea South", lat: 35.9078, lng: 127.7669, code: "kr", flag: "https://flagcdn.com/w40/kr.png" },
+            { name: "Kosovo", lat: 42.6026, lng: 20.903, code: "xk", flag: "https://flagcdn.com/w40/xk.png" },
+            { name: "Kuwait", lat: 29.3117, lng: 47.4818, code: "kw", flag: "https://flagcdn.com/w40/kw.png" },
+            { name: "Kyrgyzstan", lat: 41.2044, lng: 74.7661, code: "kg", flag: "https://flagcdn.com/w40/kg.png" },
+            { name: "Laos", lat: 19.8563, lng: 102.4955, code: "la", flag: "https://flagcdn.com/w40/la.png" },
+            { name: "Latvia", lat: 56.8796, lng: 24.6032, code: "lv", flag: "https://flagcdn.com/w40/lv.png" },
+            { name: "Lebanon", lat: 33.8547, lng: 35.8623, code: "lb", flag: "https://flagcdn.com/w40/lb.png" },
+            { name: "Lesotho", lat: -29.6099, lng: 28.2336, code: "ls", flag: "https://flagcdn.com/w40/ls.png" },
+            { name: "Liberia", lat: 6.4281, lng: -9.4295, code: "lr", flag: "https://flagcdn.com/w40/lr.png" },
+            { name: "Libya", lat: 26.3351, lng: 17.2283, code: "ly", flag: "https://flagcdn.com/w40/ly.png" },
+            { name: "Liechtenstein", lat: 47.166, lng: 9.5554, code: "li", flag: "https://flagcdn.com/w40/li.png" },
+            { name: "Lithuania", lat: 55.1694, lng: 23.8813, code: "lt", flag: "https://flagcdn.com/w40/lt.png" },
+            { name: "Luxembourg", lat: 49.8153, lng: 6.1296, code: "lu", flag: "https://flagcdn.com/w40/lu.png" },
+            { name: "Madagascar", lat: -18.7669, lng: 46.8691, code: "mg", flag: "https://flagcdn.com/w40/mg.png" },
+            { name: "Malawi", lat: -13.2543, lng: 34.3015, code: "mw", flag: "https://flagcdn.com/w40/mw.png" },
+            { name: "Malaysia", lat: 4.2105, lng: 101.9758, code: "my", flag: "https://flagcdn.com/w40/my.png" },
+            { name: "Maldives", lat: 3.2028, lng: 73.2207, code: "mv", flag: "https://flagcdn.com/w40/mv.png" },
+            { name: "Mali", lat: 17.5707, lng: -3.9962, code: "ml", flag: "https://flagcdn.com/w40/ml.png" },
+            { name: "Malta", lat: 35.9375, lng: 14.3754, code: "mt", flag: "https://flagcdn.com/w40/mt.png" },
+            { name: "Marshall Islands", lat: 7.1315, lng: 171.1845, code: "mh", flag: "https://flagcdn.com/w40/mh.png" },
+            { name: "Mauritania", lat: 21.0079, lng: -10.9408, code: "mr", flag: "https://flagcdn.com/w40/mr.png" },
+            { name: "Mauritius", lat: -20.3484, lng: 57.5522, code: "mu", flag: "https://flagcdn.com/w40/mu.png" },
+            { name: "Mexico", lat: 23.6345, lng: -102.5528, code: "mx", flag: "https://flagcdn.com/w40/mx.png" },
+            { name: "Micronesia", lat: 7.4256, lng: 150.5508, code: "fm", flag: "https://flagcdn.com/w40/fm.png" },
+            { name: "Moldova", lat: 47.4116, lng: 28.3699, code: "md", flag: "https://flagcdn.com/w40/md.png" },
+            { name: "Monaco", lat: 43.7384, lng: 7.4246, code: "mc", flag: "https://flagcdn.com/w40/mc.png" },
+            { name: "Mongolia", lat: 46.8625, lng: 103.8467, code: "mn", flag: "https://flagcdn.com/w40/mn.png" },
+            { name: "Montenegro", lat: 42.7087, lng: 19.3744, code: "me", flag: "https://flagcdn.com/w40/me.png" },
+            { name: "Morocco", lat: 31.7917, lng: -7.0926, code: "ma", flag: "https://flagcdn.com/w40/ma.png" },
+            { name: "Mozambique", lat: -18.6657, lng: 35.5296, code: "mz", flag: "https://flagcdn.com/w40/mz.png" },
+            { name: "Myanmar", lat: 21.9162, lng: 95.956, code: "mm", flag: "https://flagcdn.com/w40/mm.png" },
+            { name: "Namibia", lat: -22.9576, lng: 18.4904, code: "na", flag: "https://flagcdn.com/w40/na.png" },
+            { name: "Nauru", lat: -0.5228, lng: 166.9315, code: "nr", flag: "https://flagcdn.com/w40/nr.png" },
+            { name: "Nepal", lat: 28.3949, lng: 84.124, code: "np", flag: "https://flagcdn.com/w40/np.png" },
+            { name: "Netherlands", lat: 52.1326, lng: 5.2913, code: "nl", flag: "https://flagcdn.com/w40/nl.png" },
+            { name: "New Zealand", lat: -40.9006, lng: 174.886, code: "nz", flag: "https://flagcdn.com/w40/nz.png" },
+            { name: "Nicaragua", lat: 12.8654, lng: -85.2072, code: "ni", flag: "https://flagcdn.com/w40/ni.png" },
+            { name: "Niger", lat: 17.6078, lng: 8.0817, code: "ne", flag: "https://flagcdn.com/w40/ne.png" },
+            { name: "Nigeria", lat: 9.082, lng: 8.6753, code: "ng", flag: "https://flagcdn.com/w40/ng.png" },
+            { name: "North Macedonia", lat: 41.6086, lng: 21.7453, code: "mk", flag: "https://flagcdn.com/w40/mk.png" },
+            { name: "Norway", lat: 60.472, lng: 8.4689, code: "no", flag: "https://flagcdn.com/w40/no.png" },
+            { name: "Oman", lat: 21.5126, lng: 55.9233, code: "om", flag: "https://flagcdn.com/w40/om.png" },
+            { name: "Pakistan", lat: 30.3753, lng: 69.3451, code: "pk", flag: "https://flagcdn.com/w40/pk.png" },
+            { name: "Palau", lat: 7.515, lng: 134.5825, code: "pw", flag: "https://flagcdn.com/w40/pw.png" },
+            { name: "Palestine", lat: 31.9522, lng: 35.2332, code: "ps", flag: "https://flagcdn.com/w40/ps.png" },
+            { name: "Panama", lat: 8.5379, lng: -80.7821, code: "pa", flag: "https://flagcdn.com/w40/pa.png" },
+            { name: "Papua New Guinea", lat: -6.315, lng: 143.9555, code: "pg", flag: "https://flagcdn.com/w40/pg.png" },
+            { name: "Paraguay", lat: -23.4425, lng: -58.4438, code: "py", flag: "https://flagcdn.com/w40/py.png" },
+            { name: "Peru", lat: -9.19, lng: -75.0152, code: "pe", flag: "https://flagcdn.com/w40/pe.png" },
+            { name: "Philippines", lat: 12.8797, lng: 121.774, code: "ph", flag: "https://flagcdn.com/w40/ph.png" },
+            { name: "Poland", lat: 51.9194, lng: 19.1451, code: "pl", flag: "https://flagcdn.com/w40/pl.png" },
+            { name: "Portugal", lat: 39.3999, lng: -8.2245, code: "pt", flag: "https://flagcdn.com/w40/pt.png" },
+            { name: "Qatar", lat: 25.3548, lng: 51.1839, code: "qa", flag: "https://flagcdn.com/w40/qa.png" },
+            { name: "Romania", lat: 45.9432, lng: 24.9668, code: "ro", flag: "https://flagcdn.com/w40/ro.png" },
+            { name: "Russia", lat: 61.524, lng: 105.3188, code: "ru", flag: "https://flagcdn.com/w40/ru.png" },
+            { name: "Rwanda", lat: -1.9403, lng: 29.8739, code: "rw", flag: "https://flagcdn.com/w40/rw.png" },
+            { name: "Saint Kitts and Nevis", lat: 17.3578, lng: -62.783, code: "kn", flag: "https://flagcdn.com/w40/kn.png" },
+            { name: "Saint Lucia", lat: 13.9094, lng: -60.9789, code: "lc", flag: "https://flagcdn.com/w40/lc.png" },
+            { name: "Saint Vincent", lat: 12.9843, lng: -61.2872, code: "vc", flag: "https://flagcdn.com/w40/vc.png" },
+            { name: "Samoa", lat: -13.759, lng: -172.1046, code: "ws", flag: "https://flagcdn.com/w40/ws.png" },
+            { name: "San Marino", lat: 43.9424, lng: 12.4578, code: "sm", flag: "https://flagcdn.com/w40/sm.png" },
+            { name: "Sao Tome and Principe", lat: 0.1864, lng: 6.6131, code: "st", flag: "https://flagcdn.com/w40/st.png" },
+            { name: "Saudi Arabia", lat: 23.8859, lng: 45.0792, code: "sa", flag: "https://flagcdn.com/w40/sa.png" },
+            { name: "Senegal", lat: 14.4974, lng: -14.4524, code: "sn", flag: "https://flagcdn.com/w40/sn.png" },
+            { name: "Serbia", lat: 44.0165, lng: 21.0059, code: "rs", flag: "https://flagcdn.com/w40/rs.png" },
+            { name: "Seychelles", lat: -4.6796, lng: 55.492, code: "sc", flag: "https://flagcdn.com/w40/sc.png" },
+            { name: "Sierra Leone", lat: 8.4606, lng: -11.7799, code: "sl", flag: "https://flagcdn.com/w40/sl.png" },
+            { name: "Singapore", lat: 1.3521, lng: 103.8198, code: "sg", flag: "https://flagcdn.com/w40/sg.png" },
+            { name: "Slovakia", lat: 48.669, lng: 19.699, code: "sk", flag: "https://flagcdn.com/w40/sk.png" },
+            { name: "Slovenia", lat: 46.1512, lng: 14.9955, code: "si", flag: "https://flagcdn.com/w40/si.png" },
+            { name: "Solomon Islands", lat: -9.6457, lng: 160.1562, code: "sb", flag: "https://flagcdn.com/w40/sb.png" },
+            { name: "Somalia", lat: 5.1521, lng: 46.1996, code: "so", flag: "https://flagcdn.com/w40/so.png" },
+            { name: "South Africa", lat: -30.5595, lng: 22.9375, code: "za", flag: "https://flagcdn.com/w40/za.png" },
+            { name: "South Sudan", lat: 6.877, lng: 31.307, code: "ss", flag: "https://flagcdn.com/w40/ss.png" },
+            { name: "Spain", lat: 40.4637, lng: -3.7492, code: "es", flag: "https://flagcdn.com/w40/es.png" },
+            { name: "Sri Lanka", lat: 7.8731, lng: 80.7718, code: "lk", flag: "https://flagcdn.com/w40/lk.png" },
+            { name: "Sudan", lat: 12.8628, lng: 30.2176, code: "sd", flag: "https://flagcdn.com/w40/sd.png" },
+            { name: "Suriname", lat: 3.9193, lng: -56.0278, code: "sr", flag: "https://flagcdn.com/w40/sr.png" },
+            { name: "Sweden", lat: 60.1282, lng: 18.6435, code: "se", flag: "https://flagcdn.com/w40/se.png" },
+            { name: "Switzerland", lat: 46.8182, lng: 8.2275, code: "ch", flag: "https://flagcdn.com/w40/ch.png" },
+            { name: "Syria", lat: 34.8021, lng: 38.9968, code: "sy", flag: "https://flagcdn.com/w40/sy.png" },
+            { name: "Taiwan", lat: 23.6978, lng: 120.9605, code: "tw", flag: "https://flagcdn.com/w40/tw.png" },
+            { name: "Tajikistan", lat: 38.861, lng: 71.2761, code: "tj", flag: "https://flagcdn.com/w40/tj.png" },
+            { name: "Tanzania", lat: -6.369, lng: 34.8888, code: "tz", flag: "https://flagcdn.com/w40/tz.png" },
+            { name: "Thailand", lat: 15.87, lng: 100.9925, code: "th", flag: "https://flagcdn.com/w40/th.png" },
+            { name: "Timor-Leste", lat: -8.8742, lng: 125.7275, code: "tl", flag: "https://flagcdn.com/w40/tl.png" },
+            { name: "Togo", lat: 8.6195, lng: 0.8248, code: "tg", flag: "https://flagcdn.com/w40/tg.png" },
+            { name: "Tonga", lat: -21.179, lng: -175.1982, code: "to", flag: "https://flagcdn.com/w40/to.png" },
+            { name: "Trinidad and Tobago", lat: 10.6918, lng: -61.2225, code: "tt", flag: "https://flagcdn.com/w40/tt.png" },
+            { name: "Tunisia", lat: 33.8869, lng: 9.5375, code: "tn", flag: "https://flagcdn.com/w40/tn.png" },
+            { name: "Turkey", lat: 38.9637, lng: 35.2433, code: "tr", flag: "https://flagcdn.com/w40/tr.png" },
+            { name: "Turkmenistan", lat: 38.9697, lng: 59.5563, code: "tm", flag: "https://flagcdn.com/w40/tm.png" },
+            { name: "Tuvalu", lat: -7.1095, lng: 177.6493, code: "tv", flag: "https://flagcdn.com/w40/tv.png" },
+            { name: "Uganda", lat: 1.3733, lng: 32.2903, code: "ug", flag: "https://flagcdn.com/w40/ug.png" },
+            { name: "Ukraine", lat: 48.3794, lng: 31.1656, code: "ua", flag: "https://flagcdn.com/w40/ua.png" },
+            { name: "United Arab Emirates", lat: 23.4241, lng: 53.8478, code: "ae", flag: "https://flagcdn.com/w40/ae.png" },
+            { name: "United Kingdom", lat: 55.3781, lng: -3.436, code: "gb", flag: "https://flagcdn.com/w40/gb.png" },
+            { name: "United States", lat: 39.8283, lng: -98.5795, code: "us", flag: "https://flagcdn.com/w40/us.png" },
+            { name: "Uruguay", lat: -32.5228, lng: -55.7658, code: "uy", flag: "https://flagcdn.com/w40/uy.png" },
+            { name: "Uzbekistan", lat: 41.3775, lng: 64.5853, code: "uz", flag: "https://flagcdn.com/w40/uz.png" },
+            { name: "Vanuatu", lat: -15.3767, lng: 166.9592, code: "vu", flag: "https://flagcdn.com/w40/vu.png" },
+            { name: "Vatican City", lat: 41.9029, lng: 12.4534, code: "va", flag: "https://flagcdn.com/w40/va.png" },
+            { name: "Venezuela", lat: 6.4238, lng: -66.5897, code: "ve", flag: "https://flagcdn.com/w40/ve.png" },
+            { name: "Vietnam", lat: 14.0583, lng: 108.2772, code: "vn", flag: "https://flagcdn.com/w40/vn.png" },
+            { name: "Yemen", lat: 15.5527, lng: 48.5164, code: "ye", flag: "https://flagcdn.com/w40/ye.png" },
+            { name: "Zambia", lat: -13.1339, lng: 27.8493, code: "zm", flag: "https://flagcdn.com/w40/zm.png" },
+            { name: "Zimbabwe", lat: -19.0154, lng: 29.1549, code: "zw", flag: "https://flagcdn.com/w40/zw.png" }
+        ].sort((a, b) => a.name.localeCompare(b.name));
+
+        let selectedCountry = null;
+        let originalOptions = [];
+
+        // Function to add search functionality
+        function addSearchToDropdown() {
+            const select = document.getElementById('countrySelect');
+            originalOptions = Array.from(select.options);
+            
+            // Create search input
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = 'Type to search countries...';
+            searchInput.className = 'search-input';
+            
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                select.innerHTML = '<option value="">Choose a country</option>';
+                
+                originalOptions.forEach(option => {
+                    if (option.value && option.text.toLowerCase().includes(searchTerm)) {
+                        select.appendChild(option.cloneNode(true));
+                    }
+                });
+            });
+            
+            // Add search input above the dropdown
+            select.parentNode.insertBefore(searchInput, select);
+        }
+
+        // Function to show flag when country is selected
+        function showFlag(select) {
+            const flagContainer = document.getElementById('flagContainer');
+            const continueBtn = document.getElementById('continueBtn');
+            const selectedOption = select.options[select.selectedIndex];
+            
+            if (selectedOption.value) {
+                const flagUrl = selectedOption.getAttribute('data-flag');
+                const countryName = selectedOption.textContent;
+                selectedCountry = countries.find(c => c.code === selectedOption.value);
+                
+                flagContainer.innerHTML = `
+                    <img src="${flagUrl}" alt="Flag of ${countryName}" onerror="handleFlagError(this)">
+                    <div class="country-name">${countryName}</div>
+                `;
+                
+                continueBtn.style.display = 'block';
+                saveToLocalStorage(selectedOption.value);
+            } else {
+                flagContainer.innerHTML = '';
+                continueBtn.style.display = 'none';
+                selectedCountry = null;
+            }
+        }
+
+        // Handle broken flag images
+        function handleFlagError(img) {
+            img.style.display = 'none';
+            const flagContainer = document.getElementById('flagContainer');
+            const countryName = flagContainer.querySelector('.country-name');
+            if (countryName) {
+                countryName.innerHTML += '<div class="error-message">Flag unavailable</div>';
+            }
+        }
+
+       // Function to find country by coordinates using reverse geocoding
+function findCountryByCoordinates(lat, lng) {
+    return new Promise((resolve, reject) => {
+        // Use a reverse geocoding service to get the actual country
+        fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.countryName) {
+                    const countryName = data.countryName;
+                    // Find the country in our list
+                    const country = countries.find(c => 
+                        c.name.toLowerCase() === countryName.toLowerCase() ||
+                        c.name.toLowerCase().includes(countryName.toLowerCase()) ||
+                        countryName.toLowerCase().includes(c.name.toLowerCase())
+                    );
+                    
+                    if (country) {
+                        resolve(country);
+                    } else {
+                        // Fallback to nearest country if exact match not found
+                        resolve(findNearestCountry(lat, lng));
+                    }
+                } else {
+                    resolve(findNearestCountry(lat, lng));
+                }
+            })
+            .catch(error => {
+                console.log("Reverse geocoding failed:", error);
+                // Fallback to nearest country calculation
+                resolve(findNearestCountry(lat, lng));
+            });
+    });
+}
+
+// Fallback function to find nearest country (your original logic)
+function findNearestCountry(lat, lng) {
+    let nearestCountry = countries[0];
+    let minDistance = Number.MAX_VALUE;
+    
+    countries.forEach(country => {
+        const distance = Math.sqrt(
+            Math.pow(country.lat - lat, 2) + 
+            Math.pow(country.lng - lng, 2)
+        );
+        
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestCountry = country;
+        }
+    });
+    
+    return nearestCountry;
+}
+
+        // Function to detect user's country using browser geolocation
+function detectUserCountry() {
+    const detectedCountry = document.getElementById('detectedCountry');
+    const gpsBtn = document.getElementById('gpsBtn');
+    
+    detectedCountry.innerHTML = '<span class="loading pulse">Detecting your location...</span>';
+    gpsBtn.disabled = true;
+    gpsBtn.textContent = 'Detecting...';
+    
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+                
+                try {
+                    const detectedCountryObj = await findCountryByCoordinates(userLat, userLng);
+                    selectCountry(detectedCountryObj);
+                    
+                    detectedCountry.innerHTML = `<span class="success-message">✓ Detected: ${detectedCountryObj.name}</span>`;
+                } catch (error) {
+                    detectedCountry.innerHTML = `<span class="error-message">Failed to detect country. Please select manually.</span>`;
+                }
+                
+                gpsBtn.disabled = false;
+                gpsBtn.textContent = 'Detect My Country';
+            },
+            error => {
+                console.log("Geolocation failed:", error);
+                let errorMsg = 'Location access denied. ';
+                if (error.code === error.TIMEOUT) {
+                    errorMsg = 'Location detection timeout. ';
+                }
+                errorMsg += 'Try IP detection or select manually.';
+                
+                detectedCountry.innerHTML = `<span class="error-message">${errorMsg}</span>`;
+                gpsBtn.disabled = false;
+                gpsBtn.textContent = 'Detect My Country';
+                
+                // Shake animation for error
+                detectedCountry.classList.add('shake');
+                setTimeout(() => {
+                    detectedCountry.classList.remove('shake');
+                }, 500);
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    } else {
+        detectedCountry.innerHTML = '<span class="error-message">Geolocation not supported. Try IP detection.</span>';
+        gpsBtn.disabled = false;
+        gpsBtn.textContent = 'Detect My Country';
+    }
+}
+
+        // Function to detect country using IP address
+        function useIPLocation() {
+            const detectedCountry = document.getElementById('detectedCountry');
+            const ipBtn = document.getElementById('ipBtn');
+            
+            detectedCountry.innerHTML = '<span class="loading pulse">Detecting country by IP...</span>';
+            ipBtn.disabled = true;
+            ipBtn.textContent = 'Detecting...';
+            
+            // Using ipapi.co API (free tier)
+            fetch('https://ipapi.co/json/')
+                .then(response => response.json())
+                .then(data => {
+                    const countryCode = data.country_code.toLowerCase();
+                    const countryName = data.country_name;
+                    
+                    const country = countries.find(c => c.code === countryCode);
+                    if (country) {
+                        selectCountry(country);
+                        detectedCountry.innerHTML = `<span class="success-message">✓ IP Detection: ${country.name}</span>`;
+                    } else {
+                        detectedCountry.innerHTML = `<span class="error-message">IP Detection: ${countryName} (not in list)</span>`;
+                    }
+                    ipBtn.disabled = false;
+                    ipBtn.textContent = 'Use IP Location';
+                })
+                .catch(error => {
+                    console.log("IP detection failed:", error);
+                    detectedCountry.innerHTML = '<span class="error-message">IP detection failed. Please select manually.</span>';
+                    ipBtn.disabled = false;
+                    ipBtn.textContent = 'Use IP Location';
+                    
+                    // Shake animation for error
+                    detectedCountry.classList.add('shake');
+                    setTimeout(() => {
+                        detectedCountry.classList.remove('shake');
+                    }, 500);
+                });
+        }
+
+        // Function to select a country in the dropdown
+        function selectCountry(country) {
+            const countrySelect = document.getElementById('countrySelect');
+            countrySelect.value = country.code;
+            showFlag(countrySelect);
+        }
+
+        // Save to local storage
+        function saveToLocalStorage(countryCode) {
+            localStorage.setItem('supremePreferredCountry', countryCode);
+            localStorage.setItem('supremeLastSelection', new Date().toISOString());
+        }
+
+        // Load from local storage
+        function loadFromLocalStorage() {
+            const savedCountry = localStorage.getItem('supremePreferredCountry');
+            if (savedCountry) {
+                const country = countries.find(c => c.code === savedCountry);
+                if (country) {
+                    selectCountry(country);
+                    const detectedCountry = document.getElementById('detectedCountry');
+                    detectedCountry.innerHTML = `<span class="success-message">✓ Loaded your previous selection</span>`;
+                }
+            }
+        }
+
+        // Continue to site function
+function proceedToSite() {
+    if (selectedCountry) {
+        const continueBtn = document.getElementById('continueBtn');
+        continueBtn.disabled = true;
+        continueBtn.textContent = 'ENTERING SUPREME...';
+        
+        // Save the selected country for use in sample1.html
+        localStorage.setItem('supremeSelectedCountry', JSON.stringify(selectedCountry));
+        
+        // Simulate loading and redirect to sample1.html
+        setTimeout(() => {
+            window.location.href = "sample1.html"; // Redirect to sample1.html
+        }, 1500);
+    }
+}
+
+        // Add keyboard navigation support
+        document.addEventListener('keydown', function(e) {
+            const countryBox = document.getElementById('countryBox');
+            if (countryBox.style.display === 'block') {
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const select = document.getElementById('countrySelect');
+                    select.focus();
+                }
+                if (e.key === 'Enter' && selectedCountry) {
+                    proceedToSite();
+                }
+            }
+        });
+
+        // After animation completes, show country selection box
+        setTimeout(function() {
+            const countryBox = document.getElementById('countryBox');
+            const countrySelect = document.getElementById('countrySelect');
+            
+            // Clear existing options
+            countrySelect.innerHTML = '<option value="">Choose a country</option>';
+            
+            // Add all sorted countries from the array
+            countries.forEach(country => {
+                const option = document.createElement('option');
+                option.value = country.code;
+                option.textContent = country.name;
+                option.setAttribute('data-flag', country.flag);
+                countrySelect.appendChild(option);
+            });
+            
+            // Show the country box
+            countryBox.style.display = 'block';
+            
+            // Add search functionality
+            addSearchToDropdown();
+            
+            // Load previous selection first
+            loadFromLocalStorage();
+            
+            // Then try IP detection
+            setTimeout(() => {
+                useIPLocation();
+            }, 500);
+            
+        }, 3000);
+    </script>
+</body>
+</html>

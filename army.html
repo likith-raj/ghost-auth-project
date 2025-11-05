@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Sectors Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Work Sans', sans-serif;
+            background: #000000;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-weight: 400;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #fff, #a8d8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: slideInFromTop 1.8s ease-out;
+        }
+
+        .subtitle {
+            font-weight: 300;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 1.5rem;
+            animation: slideInFromTop 2s ease-out;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .location-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            animation: fadeIn 2s ease-out;
+            height: fit-content;
+        }
+
+        .location-btn {
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+            background: linear-gradient(135deg, #4a90e2 0%, #2c5aa0 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1.5rem;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .location-btn:hover {
+            background: linear-gradient(135deg, #5a9fed 0%, #3c6ab0 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(42, 112, 204, 0.4);
+        }
+
+        .location-btn:active {
+            transform: translateY(0);
+        }
+
+        .location-info {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid #4a90e2;
+        }
+
+        .location-loading {
+            display: none;
+            font-size: 0.95rem;
+            margin: 1rem 0;
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .location-error {
+            display: none;
+            color: #ff6b6b;
+            font-size: 0.95rem;
+            margin: 1rem 0;
+            padding: 12px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid #ff6b6b;
+        }
+
+        .instructions {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .sectors-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            animation: fadeIn 2.5s ease-out;
+        }
+
+        .sector-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sector-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .sector-card.military {
+            border-left-color: #ff6b6b;
+        }
+
+        .sector-card.police {
+            border-left-color: #4ecdc4;
+        }
+
+        .sector-card.airport {
+            border-left-color: #45b7d1;
+        }
+
+        .sector-card.government {
+            border-left-color: #96ceb4;
+        }
+
+        .sector-card.medical {
+            border-left-color: #feca57;
+        }
+
+        .sector-card.education {
+            border-left-color: #ff9ff3;
+        }
+
+        .sector-card.emergency {
+            border-left-color: #ff7979;
+        }
+
+        .sector-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .sector-icon {
+            font-size: 1.8rem;
+            margin-right: 12px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .military .sector-icon {
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .police .sector-icon {
+            background: rgba(78, 205, 196, 0.2);
+        }
+
+        .airport .sector-icon {
+            background: rgba(69, 183, 209, 0.2);
+        }
+
+        .government .sector-icon {
+            background: rgba(150, 206, 180, 0.2);
+        }
+
+        .medical .sector-icon {
+            background: rgba(254, 202, 87, 0.2);
+        }
+
+        .education .sector-icon {
+            background: rgba(255, 159, 243, 0.2);
+        }
+
+        .emergency .sector-icon {
+            background: rgba(255, 121, 121, 0.2);
+        }
+
+        .sector-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .sector-type {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+
+        .sector-details {
+            margin-top: auto;
+        }
+
+        .sector-distance {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .sector-address {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            line-height: 1.4;
+        }
+
+        .sector-contact {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+
+        .floating-elements {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .floating-element:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 5%;
+            animation-delay: 0s;
+        }
+
+        .floating-element:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 70%;
+            left: 85%;
+            animation-delay: -5s;
+        }
+
+        .floating-element:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            top: 20%;
+            left: 90%;
+            animation-delay: -10s;
+        }
+
+        .floating-element:nth-child(4) {
+            width: 100px;
+            height: 100px;
+            top: 80%;
+            left: 10%;
+            animation-delay: -7s;
+        }
+
+        .floating-element:nth-child(5) {
+            width: 70px;
+            height: 70px;
+            top: 40%;
+            left: 3%;
+            animation-delay: -12s;
+        }
+
+        .floating-element:nth-child(6) {
+            width: 90px;
+            height: 90px;
+            top: 60%;
+            left: 95%;
+            animation-delay: -15s;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(15px, 20px) rotate(5deg);
+            }
+            50% {
+                transform: translate(-10px, 15px) rotate(-5deg);
+            }
+            75% {
+                transform: translate(10px, -10px) rotate(3deg);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .section-title {
+            font-weight: 500;
+            font-size: 1.3rem;
+            margin: 2rem 0 1rem 0;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn.active {
+            background: rgba(74, 144, 226, 0.3);
+            border-color: #4a90e2;
+        }
+
+        .filter-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        /* NEW FEATURES */
+        .stats-dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #4a90e2, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        .emergency-actions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .emergency-actions h3 {
+            margin-bottom: 15px;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .emergency-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .emergency-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .emergency-btn.police {
+            border-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+
+        .emergency-btn.medical {
+            border-color: #feca57;
+            background: rgba(254, 202, 87, 0.1);
+        }
+
+        .emergency-btn.fire {
+            border-color: #ff7979;
+            background: rgba(255, 121, 121, 0.1);
+        }
+
+        .emergency-btn i {
+            font-size: 1.2rem;
+        }
+
+        .tracking-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tracking-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            flex: 1;
+        }
+
+        .tracking-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .tracking-btn.active {
+            background: rgba(74, 144, 226, 0.3);
+            border-color: #4a90e2;
+        }
+
+        .tracking-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tracking-stat {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .tracking-stat .stat-value {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 2px;
+            background: linear-gradient(90deg, #4a90e2, #96ceb4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tracking-stat .stat-label {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .proximity-alerts {
+            margin-bottom: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .alert-item {
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .alert-item.warning {
+            background: rgba(254, 202, 87, 0.1);
+            border-color: rgba(254, 202, 87, 0.3);
+        }
+
+        .alert-item.info {
+            background: rgba(69, 183, 209, 0.1);
+            border-color: rgba(69, 183, 209, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .route-history {
+            margin-top: 15px;
+        }
+
+        .route-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .route-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .route-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .route-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .voice-command {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a90e2 0%, #2c5aa0 100%);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(42, 112, 204, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .voice-command:hover {
+            transform: scale(1.1);
+        }
+
+        .voice-command.listening {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c44569 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .sector-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+            font-weight: 600;
+        }
+
+        .status-open {
+            background: rgba(150, 206, 180, 0.2);
+            color: #96ceb4;
+        }
+
+        .status-closed {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+
+        .status-247 {
+            background: rgba(69, 183, 209, 0.2);
+            color: #45b7d1;
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: white;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #4a90e2;
+        }
+
+        .sector-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        .map-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: none;
+        }
+
+        .map-placeholder {
+            height: 300px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .map-placeholder i {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        .map-placeholder p {
+            opacity: 0.5;
+        }
+
+        .close-map-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .close-map-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+    </div>
+    
+    <button class="voice-command" id="voice-command">
+        <i class="fas fa-microphone"></i>
+    </button>
+    
+    <div class="container">
+        <header>
+            <h1>Government Sectors Finder</h1>
+            <p class="subtitle">Locate military, police, airports and other government facilities near you</p>
+        </header>
+
+        <div class="main-content">
+            <div class="location-section">
+                <button class="location-btn" id="get-location">
+                    <i class="fas fa-map-marker-alt"></i> Detect My Location
+                </button>
+                
+                <div class="stats-dashboard">
+                    <div class="stat-card">
+                        <div class="stat-number" id="total-sectors">0</div>
+                        <div class="stat-label">Total Sectors</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="nearest-distance">-</div>
+                        <div class="stat-label">Nearest (km)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="response-time">-</div>
+                        <div class="stat-label">Avg Response</div>
+                    </div>
+                </div>
+
+                <div class="emergency-actions">
+                    <h3>Emergency Quick Actions</h3>
+                    <div class="quick-buttons">
+                        <button class="emergency-btn police" onclick="callEmergency('police')">
+                            <i class="fas fa-badge"></i> Police
+                        </button>
+                        <button class="emergency-btn medical" onclick="callEmergency('medical')">
+                            <i class="fas fa-ambulance"></i> Medical
+                        </button>
+                        <button class="emergency-btn fire" onclick="callEmergency('fire')">
+                            <i class="fas fa-fire-extinguisher"></i> Fire
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tracking Controls -->
+                <div class="tracking-controls">
+                    <button class="tracking-btn" id="start-tracking">
+                        <i class="fas fa-play"></i> Start Tracking
+                    </button>
+                    <button class="tracking-btn" id="stop-tracking" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop Tracking
+                    </button>
+                    <button class="tracking-btn" id="save-route">
+                        <i class="fas fa-save"></i> Save Route
+                    </button>
+                </div>
+
+                <div class="tracking-stats">
+                    <div class="tracking-stat">
+                        <span class="stat-value" id="tracking-distance">0 m</span>
+                        <span class="stat-label">Distance</span>
+                    </div>
+                    <div class="tracking-stat">
+                        <span class="stat-value" id="tracking-speed">0 m/s</span>
+                        <span class="stat-label">Speed</span>
+                    </div>
+                    <div class="tracking-stat">
+                        <span class="stat-value" id="tracking-time">00:00</span>
+                        <span class="stat-label">Time</span>
+                    </div>
+                </div>
+
+                <div class="proximity-alerts" id="proximity-alerts">
+                    <!-- Alerts will appear here -->
+                </div>
+
+                <div class="location-loading" id="location-loading">
+                    <i class="fas fa-spinner fa-spin"></i> Detecting your location and finding nearby sectors...
+                </div>
+                <div class="location-info" id="location-info"></div>
+                <div class="location-error" id="location-error"></div>
+                
+                <div class="search-box">
+                    <input type="text" class="search-input" id="search-input" placeholder="Search sectors...">
+                </div>
+
+                <div class="filter-buttons">
+                    <div class="filter-btn active" data-filter="all">All</div>
+                    <div class="filter-btn" data-filter="military">Military</div>
+                    <div class="filter-btn" data-filter="police">Police</div>
+                    <div class="filter-btn" data-filter="airport">Airports</div>
+                    <div class="filter-btn" data-filter="government">Government</div>
+                </div>
+
+                <div class="instructions">
+                    Click the button to detect your location and find government sectors near you. Your location data is not stored on any server.
+                </div>
+
+                <div class="route-history">
+                    <h4>Route History</h4>
+                    <div id="route-list"></div>
+                </div>
+
+                <div class="map-container" id="map-container">
+                    <h3>Interactive Map</h3>
+                    <div class="map-placeholder">
+                        <i class="fas fa-map"></i>
+                        <p>Interactive map would be displayed here</p>
+                    </div>
+                    <button class="close-map-btn" onclick="toggleMap()">Close Map</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Nearby Government Sectors</div>
+                <div class="sectors-container" id="sectors-container">
+                    <!-- Government sectors will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Government Sectors Finder &copy; 2023 | Uses your location to find nearby facilities</p>
+        </footer>
+    </div>
+
+    <script>
+        // DOM Elements
+        const locationBtn = document.getElementById('get-location');
+        const locationInfo = document.getElementById('location-info');
+        const locationLoading = document.getElementById('location-loading');
+        const locationError = document.getElementById('location-error');
+        const sectorsContainer = document.getElementById('sectors-container');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const searchInput = document.getElementById('search-input');
+        const voiceCommand = document.getElementById('voice-command');
+        const totalSectors = document.getElementById('total-sectors');
+        const nearestDistance = document.getElementById('nearest-distance');
+        const responseTime = document.getElementById('response-time');
+        const startTrackingBtn = document.getElementById('start-tracking');
+        const stopTrackingBtn = document.getElementById('stop-tracking');
+        const saveRouteBtn = document.getElementById('save-route');
+        const trackingDistance = document.getElementById('tracking-distance');
+        const trackingSpeed = document.getElementById('tracking-speed');
+        const trackingTime = document.getElementById('tracking-time');
+        const proximityAlerts = document.getElementById('proximity-alerts');
+        const routeList = document.getElementById('route-list');
+
+        // Tracking variables
+        let watchId = null;
+        let userPath = [];
+        let trackingStartTime = null;
+        let trackingInterval = null;
+        let trackingStats = {
+            totalDistance: 0,
+            avgSpeed: 0,
+            maxSpeed: 0,
+            timeSpentNearSectors: {},
+            visitedSectors: new Set()
+        };
+
+        // Government sectors data with realistic examples
+        const governmentSectors = [
+            { type: 'military', name: 'Army Base', icon: 'fa-shield-alt', color: 'military', features: ['Restricted Access', '24/7 Security'] },
+            { type: 'military', name: 'Naval Station', icon: 'fa-ship', color: 'military', features: ['Coastal Security', 'Military Port'] },
+            { type: 'military', name: 'Air Force Base', icon: 'fa-fighter-jet', color: 'military', features: ['Air Defense', 'Restricted Airspace'] },
+            { type: 'military', name: 'Military Hospital', icon: 'fa-hospital', color: 'military', features: ['Emergency Care', 'Military Personnel'] },
+            { type: 'police', name: 'Police Station', icon: 'fa-badge', color: 'police', features: ['Public Access', '24/7 Service'] },
+            { type: 'police', name: 'Traffic Police', icon: 'fa-traffic-light', color: 'police', features: ['Traffic Control', 'Road Safety'] },
+            { type: 'police', name: 'Police Headquarters', icon: 'fa-building', color: 'police', features: ['Administration', 'Command Center'] },
+            { type: 'police', name: 'SWAT Command', icon: 'fa-helmet-battle', color: 'police', features: ['Special Ops', 'Emergency Response'] },
+            { type: 'airport', name: 'International Airport', icon: 'fa-plane', color: 'airport', features: ['Security Check', 'Customs'] },
+            { type: 'airport', name: 'Airport Security', icon: 'fa-user-shield', color: 'airport', features: ['TSA', 'Baggage Check'] },
+            { type: 'airport', name: 'Air Traffic Control', icon: 'fa-tower-control', color: 'airport', features: ['Flight Control', 'Radar'] },
+            { type: 'airport', name: 'Coast Guard Air Station', icon: 'fa-helicopter', color: 'airport', features: ['Search & Rescue', 'Maritime'] },
+            { type: 'government', name: 'City Hall', icon: 'fa-landmark', color: 'government', features: ['Public Services', 'Administration'] },
+            { type: 'government', name: 'Court House', icon: 'fa-gavel', color: 'government', features: ['Legal Services', 'Public Records'] },
+            { type: 'government', name: 'Post Office', icon: 'fa-mail-bulk', color: 'government', features: ['Mail Services', 'Packages'] },
+            { type: 'government', name: 'Federal Building', icon: 'fa-monument', color: 'government', features: ['Federal Offices', 'Security'] },
+            { type: 'government', name: 'Embassy District', icon: 'fa-flag', color: 'government', features: ['Diplomatic', 'International'] },
+            { type: 'medical', name: 'Military Hospital', icon: 'fa-hospital', color: 'medical', features: ['Emergency Care', 'Specialized'] },
+            { type: 'medical', name: 'Government Clinic', icon: 'fa-clinic-medical', color: 'medical', features: ['Public Health', 'Vaccinations'] },
+            { type: 'education', name: 'Government School', icon: 'fa-school', color: 'education', features: ['Public Education', 'K-12'] },
+            { type: 'education', name: 'Public University', icon: 'fa-university', color: 'education', features: ['Higher Education', 'Research'] },
+            { type: 'emergency', name: 'Fire Station', icon: 'fa-fire-extinguisher', color: 'emergency', features: ['Fire Response', 'Rescue'] },
+            { type: 'emergency', name: 'Emergency Operations', icon: 'fa-bullhorn', color: 'emergency', features: ['Crisis Management', 'Coordination'] }
+        ];
+
+        // Restricted zones for proximity alerts
+        const restrictedZones = [
+            { lat: 40.7128, lng: -74.0060, radius: 500, type: 'military', name: 'Military Base', alert: 'Restricted Area: Military Installation' },
+            { lat: 40.7589, lng: -73.9851, radius: 200, type: 'government', name: 'Federal Building', alert: 'Restricted Area: Federal Property' },
+            { lat: 40.6892, lng: -74.0445, radius: 1000, type: 'airport', name: 'International Airport', alert: 'Restricted Area: Airport Security Zone' }
+        ];
+
+        // Event listener for location button
+        locationBtn.addEventListener('click', getLocation);
+
+        // Event listeners for filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                filterSectors(filter);
+            });
+        });
+
+        // Search functionality
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterSectorsBySearch(searchTerm);
+        });
+
+        // Voice command functionality
+        voiceCommand.addEventListener('click', function() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert('Voice recognition is not supported in your browser.');
+                return;
+            }
+
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            
+            recognition.start();
+            voiceCommand.classList.add('listening');
+            
+            recognition.onresult = function(event) {
+                const command = event.results[0][0].transcript.toLowerCase();
+                handleVoiceCommand(command);
+                voiceCommand.classList.remove('listening');
+            };
+            
+            recognition.onerror = function() {
+                voiceCommand.classList.remove('listening');
+            };
+            
+            recognition.onend = function() {
+                voiceCommand.classList.remove('listening');
+            };
+        });
+
+        // Tracking functionality
+        startTrackingBtn.addEventListener('click', startTracking);
+        stopTrackingBtn.addEventListener('click', stopTracking);
+        saveRouteBtn.addEventListener('click', saveRoute);
+
+        function handleVoiceCommand(command) {
+            if (command.includes('location') || command.includes('find')) {
+                getLocation();
+            } else if (command.includes('police')) {
+                filterSectors('police');
+                setActiveFilter('police');
+            } else if (command.includes('military')) {
+                filterSectors('military');
+                setActiveFilter('military');
+            } else if (command.includes('airport')) {
+                filterSectors('airport');
+                setActiveFilter('airport');
+            } else if (command.includes('government')) {
+                filterSectors('government');
+                setActiveFilter('government');
+            } else if (command.includes('all') || command.includes('show all')) {
+                filterSectors('all');
+                setActiveFilter('all');
+            } else if (command.includes('map')) {
+                toggleMap();
+            } else if (command.includes('start tracking')) {
+                startTracking();
+            } else if (command.includes('stop tracking')) {
+                stopTracking();
+            }
+        }
+
+        function setActiveFilter(filter) {
+            filterButtons.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-filter') === filter) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+
+        function getLocation() {
+            // Reset states
+            locationInfo.textContent = '';
+            locationError.style.display = 'none';
+            locationLoading.style.display = 'block';
+            
+            if (!navigator.geolocation) {
+                locationLoading.style.display = 'none';
+                locationError.textContent = 'Geolocation is not supported by your browser';
+                locationError.style.display = 'block';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                // Success callback
+                function(position) {
+                    locationLoading.style.display = 'none';
+                    
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+                    
+                    // Use reverse geocoding to get location name
+                    getLocationName(latitude, longitude);
+                    
+                    // Generate nearby government sectors
+                    generateNearbySectors(latitude, longitude);
+                },
+                // Error callback
+                function(error) {
+                    locationLoading.style.display = 'none';
+                    
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            locationError.textContent = 'Location access was denied. Please allow location access.';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            locationError.textContent = 'Location information is unavailable.';
+                            break;
+                        case error.TIMEOUT:
+                            locationError.textContent = 'Location request timed out.';
+                            break;
+                        default:
+                            locationError.textContent = 'An unknown error occurred.';
+                            break;
+                    }
+                    
+                    locationError.style.display = 'block';
+                },
+                // Options
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+
+        function getLocationName(lat, lng) {
+            // Using OpenStreetMap Nominatim API for reverse geocoding
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                .then(response => response.json())
+                .then(data => {
+                    let locationText = '<i class="fas fa-map-pin"></i> Your location: ';
+                    
+                    if (data.address) {
+                        if (data.address.city) {
+                            locationText += data.address.city;
+                        } else if (data.address.town) {
+                            locationText += data.address.town;
+                        } else if (data.address.village) {
+                            locationText += data.address.village;
+                        } else if (data.address.county) {
+                            locationText += data.address.county;
+                        }
+                        
+                        if (data.address.country) {
+                            locationText += `, ${data.address.country}`;
+                        }
+                    } else {
+                        locationText += `Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+                    }
+                    
+                    locationInfo.innerHTML = locationText;
+                })
+                .catch(error => {
+                    locationInfo.innerHTML = `<i class="fas fa-map-pin"></i> Your location: Latitude: ${lat.toFixed(4)}, Longitude: ${lng.toFixed(4)}`;
+                });
+        }
+
+        function generateNearbySectors(lat, lng) {
+            // Clear previous results
+            sectorsContainer.innerHTML = '';
+            
+            // Generate random nearby sectors (in a real app, this would come from an API)
+            const nearbySectors = [];
+            const numSectors = 10 + Math.floor(Math.random() * 8); // 10-18 sectors
+            
+            for (let i = 0; i < numSectors; i++) {
+                const randomSector = governmentSectors[Math.floor(Math.random() * governmentSectors.length)];
+                
+                // Generate random distance (0.5 - 25 km)
+                const distance = (0.5 + Math.random() * 24.5).toFixed(1);
+                
+                // Generate a random address
+                const streetNumber = Math.floor(Math.random() * 1000) + 1;
+                const streetNames = ['Main St', 'Oak Ave', 'Park Rd', 'Central Blvd', 'Government Way', 'Service Rd', 'Security Dr', 'Federal Ave'];
+                const streetName = streetNames[Math.floor(Math.random() * streetNames.length)];
+                
+                // Generate a random phone number
+                const areaCode = Math.floor(Math.random() * 900) + 100;
+                const prefix = Math.floor(Math.random() * 900) + 100;
+                const lineNumber = Math.floor(Math.random() * 9000) + 1000;
+                const phone = `(${areaCode}) ${prefix}-${lineNumber}`;
+                
+                // Generate status
+                const statuses = [
+                    { type: 'open', text: 'Open', class: 'status-open' },
+                    { type: 'closed', text: 'Closed', class: 'status-closed' },
+                    { type: '247', text: '24/7', class: 'status-247' }
+                ];
+                const status = statuses[Math.floor(Math.random() * statuses.length)];
+                
+                // Add coordinates for tracking
+                const sectorLat = lat + (Math.random() - 0.5) * 0.1;
+                const sectorLng = lng + (Math.random() - 0.5) * 0.1;
+                
+                const sector = {
+                    ...randomSector,
+                    distance: distance,
+                    address: `${streetNumber} ${streetName}`,
+                    phone: phone,
+                    status: status,
+                    lat: sectorLat,
+                    lng: sectorLng
+                };
+                
+                nearbySectors.push(sector);
+            }
+            
+            // Sort by distance
+            nearbySectors.sort((a, b) => parseFloat(a.distance) - parseFloat(b.distance));
+            
+            // Update stats
+            updateStats(nearbySectors);
+            
+            // Create sector cards
+            nearbySectors.forEach(sector => {
+                const sectorCard = document.createElement('div');
+                sectorCard.className = `sector-card ${sector.color}`;
+                
+                sectorCard.innerHTML = `
+                    <div class="sector-header">
+                        <div class="sector-icon">
+                            <i class="fas ${sector.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="sector-name">${sector.name}
+                                <span class="sector-status ${sector.status.class}">${sector.status.text}</span>
+                            </div>
+                            <div class="sector-type">${sector.type.charAt(0).toUpperCase() + sector.type.slice(1)}</div>
+                        </div>
+                    </div>
+                    <div class="sector-details">
+                        <div class="sector-distance"><i class="fas fa-location-arrow"></i> ${sector.distance} km away</div>
+                        <div class="sector-address">${sector.address}</div>
+                        <div class="sector-contact">Phone: ${sector.phone}</div>
+                        <div class="sector-features">
+                            ${sector.features.map(feature => `<div class="feature-tag">${feature}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                sectorsContainer.appendChild(sectorCard);
+            });
+        }
+
+        function updateStats(sectors) {
+            totalSectors.textContent = sectors.length;
+            
+            if (sectors.length > 0) {
+                nearestDistance.textContent = sectors[0].distance;
+                
+                // Calculate average response time based on distance and sector type
+                const avgDistance = sectors.reduce((sum, sector) => sum + parseFloat(sector.distance), 0) / sectors.length;
+                const avgResponse = (avgDistance * 1.5).toFixed(1);
+                responseTime.textContent = `${avgResponse} min`;
+            }
+        }
+
+        function filterSectors(filter) {
+            const allSectors = document.querySelectorAll('.sector-card');
+            
+            allSectors.forEach(sector => {
+                if (filter === 'all') {
+                    sector.style.display = 'flex';
+                } else {
+                    if (sector.classList.contains(filter)) {
+                        sector.style.display = 'flex';
+                    } else {
+                        sector.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function filterSectorsBySearch(searchTerm) {
+            const allSectors = document.querySelectorAll('.sector-card');
+            const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+            
+            allSectors.forEach(sector => {
+                const sectorName = sector.querySelector('.sector-name').textContent.toLowerCase();
+                const sectorType = sector.querySelector('.sector-type').textContent.toLowerCase();
+                const sectorAddress = sector.querySelector('.sector-address').textContent.toLowerCase();
+                
+                const matchesSearch = sectorName.includes(searchTerm) || 
+                                    sectorType.includes(searchTerm) || 
+                                    sectorAddress.includes(searchTerm);
+                
+                const matchesFilter = activeFilter === 'all' || sector.classList.contains(activeFilter);
+                
+                if (matchesSearch && matchesFilter) {
+                    sector.style.display = 'flex';
+                } else {
+                    sector.style.display = 'none';
+                }
+            });
+        }
+
+        function callEmergency(type) {
+            let number = '';
+            let message = '';
+            
+            switch(type) {
+                case 'police':
+                    number = '911';
+                    message = 'Calling police emergency services';
+                    break;
+                case 'medical':
+                    number = '911';
+                    message = 'Calling medical emergency services';
+                    break;
+                case 'fire':
+                    number = '911';
+                    message = 'Calling fire emergency services';
+                    break;
+            }
+            
+            alert(`${message}: ${number}`);
+            // In a real app, this would actually call the number
+            // window.location.href = `tel:${number}`;
+        }
+
+        function toggleMap() {
+            const mapContainer = document.getElementById('map-container');
+            if (mapContainer.style.display === 'none' || mapContainer.style.display === '') {
+                mapContainer.style.display = 'block';
+            } else {
+                mapContainer.style.display = 'none';
+            }
+        }
+
+        // Tracking functions
+        function startTracking() {
+            if (!navigator.geolocation) {
+                alert('Geolocation is not supported by your browser.');
+                return;
+            }
+
+            // Reset tracking data
+            userPath = [];
+            trackingStats = {
+                totalDistance: 0,
+                avgSpeed: 0,
+                maxSpeed: 0,
+                timeSpentNearSectors: {},
+                visitedSectors: new Set()
+            };
+            
+            trackingStartTime = Date.now();
+            
+            // Start tracking
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude, speed } = position.coords;
+                    const timestamp = Date.now();
+                    
+                    // Add to path
+                    userPath.push({ lat: latitude, lng: longitude, timestamp });
+                    
+                    // Update tracking stats
+                    updateTrackingStats(latitude, longitude, speed);
+                    
+                    // Check proximity to restricted zones
+                    checkProximityAlerts(latitude, longitude);
+                    
+                    // Update UI
+                    updateTrackingUI();
+                },
+                (error) => {
+                    console.error('Tracking error:', error);
+                    alert('Error tracking your location: ' + error.message);
+                },
+                { 
+                    enableHighAccuracy: true, 
+                    maximumAge: 30000, 
+                    timeout: 27000 
+                }
+            );
+            
+            // Update UI
+            startTrackingBtn.style.display = 'none';
+            stopTrackingBtn.style.display = 'block';
+            
+            // Start timer
+            startTrackingTimer();
+        }
+
+        function stopTracking() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            // Stop timer
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+                trackingInterval = null;
+            }
+            
+            // Update UI
+            startTrackingBtn.style.display = 'block';
+            stopTrackingBtn.style.display = 'none';
+        }
+
+        function saveRoute() {
+            if (userPath.length === 0) {
+                alert('No tracking data to save. Start tracking first.');
+                return;
+            }
+            
+            const routeName = prompt('Enter a name for this route:');
+            if (!routeName) return;
+            
+            const route = {
+                name: routeName,
+                path: [...userPath],
+                timestamp: Date.now(),
+                duration: userPath.length > 0 ? userPath[userPath.length - 1].timestamp - userPath[0].timestamp : 0,
+                distance: trackingStats.totalDistance
+            };
+            
+            // Save to localStorage
+            let routeHistory = JSON.parse(localStorage.getItem('routeHistory') || '[]');
+            routeHistory.push(route);
+            localStorage.setItem('routeHistory', JSON.stringify(routeHistory));
+            
+            // Update UI
+            updateRouteHistory();
+            
+            alert(`Route "${routeName}" saved successfully!`);
+        }
+
+        function updateTrackingStats(lat, lng, speed) {
+            if (userPath.length < 2) return;
+
+            // Calculate distance traveled
+            const lastPoint = userPath[userPath.length - 1];
+            const prevPoint = userPath[userPath.length - 2];
+            
+            const distance = calculateDistance(
+                prevPoint.lat, prevPoint.lng,
+                lastPoint.lat, lastPoint.lng
+            );
+            
+            trackingStats.totalDistance += distance;
+            
+            // Calculate speed if not provided by browser
+            const calculatedSpeed = speed || (distance / ((lastPoint.timestamp - prevPoint.timestamp) / 1000));
+            
+            trackingStats.avgSpeed = (trackingStats.avgSpeed + calculatedSpeed) / 2;
+            trackingStats.maxSpeed = Math.max(trackingStats.maxSpeed, calculatedSpeed);
+        }
+
+        function calculateDistance(lat1, lng1, lat2, lng2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLng = (lng2 - lng1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLng/2) * Math.sin(dLng/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c * 1000; // Distance in meters
+        }
+
+        function checkProximityAlerts(lat, lng) {
+            restrictedZones.forEach(zone => {
+                const distance = calculateDistance(lat, lng, zone.lat, zone.lng);
+                if (distance <= zone.radius) {
+                    showProximityAlert(zone, distance);
+                }
+            });
+        }
+
+        function showProximityAlert(zone, distance) {
+            // Check if we've already shown this alert recently
+            const alertKey = `${zone.lat}-${zone.lng}`;
+            if (trackingStats.visitedSectors.has(alertKey)) return;
+            
+            trackingStats.visitedSectors.add(alertKey);
+            
+            const alertItem = document.createElement('div');
+            alertItem.className = 'alert-item warning';
+            alertItem.innerHTML = `
+                <strong>${zone.alert}</strong><br>
+                <small>Distance: ${distance.toFixed(0)}m | ${zone.name}</small>
+            `;
+            
+            proximityAlerts.appendChild(alertItem);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (alertItem.parentNode) {
+                    alertItem.remove();
+                }
+            }, 10000);
+        }
+
+        function updateTrackingUI() {
+            // Update distance
+            trackingDistance.textContent = `${trackingStats.totalDistance.toFixed(0)} m`;
+            
+            // Update speed
+            trackingSpeed.textContent = `${trackingStats.avgSpeed.toFixed(1)} m/s`;
+            
+            // Update time
+            if (trackingStartTime) {
+                const elapsed = Math.floor((Date.now() - trackingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                trackingTime.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function startTrackingTimer() {
+            trackingInterval = setInterval(() => {
+                updateTrackingUI();
+            }, 1000);
+        }
+
+        function updateRouteHistory() {
+            const routeHistory = JSON.parse(localStorage.getItem('routeHistory') || '[]');
+            routeList.innerHTML = '';
+            
+            if (routeHistory.length === 0) {
+                routeList.innerHTML = '<p style="opacity: 0.7; text-align: center;">No saved routes</p>';
+                return;
+            }
+            
+            routeHistory.forEach((route, index) => {
+                const routeItem = document.createElement('div');
+                routeItem.className = 'route-item';
+                
+                const durationMinutes = Math.floor(route.duration / 60000);
+                const durationSeconds = Math.floor((route.duration % 60000) / 1000);
+                
+                routeItem.innerHTML = `
+                    <div class="route-name">${route.name}</div>
+                    <div class="route-details">
+                        <span>${(route.distance / 1000).toFixed(2)} km</span>
+                        <span>${durationMinutes}m ${durationSeconds}s</span>
+                        <span>${new Date(route.timestamp).toLocaleDateString()}</span>
+                    </div>
+                `;
+                
+                routeItem.addEventListener('click', () => {
+                    replayRoute(route);
+                });
+                
+                routeList.appendChild(routeItem);
+            });
+        }
+
+        function replayRoute(route) {
+            if (route.path.length === 0) return;
+            
+            alert(`Replaying route: ${route.name}\nThis would show the route on a map in a real application.`);
+            
+            // In a real app, this would animate the user's position along the route
+            // For now, we'll just log it
+            console.log('Replaying route:', route);
+        }
+
+        // Initialize with some example data
+        document.addEventListener('DOMContentLoaded', function() {
+            // Generate some initial sectors for demo purposes
+            setTimeout(() => {
+                generateNearbySectors(40.7128, -74.0060); // Default to NYC coordinates for demo
+                locationInfo.innerHTML = '<i class="fas fa-map-pin"></i> Your location: New York City, US (Demo)';
+            }, 1000);
+            
+            // Load route history
+            updateRouteHistory();
+        });
+    </script>
+</body>
+</html>

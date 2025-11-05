@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeRoute - Crime Prediction & Safety Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        html, body { 
+            background: #000; 
+            overflow: hidden; 
+            height: 100%;
+            width: 100%;
+            font-family: 'Arial', sans-serif;
+        }
+        #map { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 100%;
+            width: 100%; 
+        }
+        
+        .control-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 1000;
+            border: 2px solid #333;
+            width: 350px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .safety-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 1000;
+            border: 2px solid #333;
+            width: 300px;
+        }
+        
+        .safety-score {
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .safe { background: linear-gradient(135deg, #00c853, #64dd17); }
+        .medium { background: linear-gradient(135deg, #ff9800, #ffc107); }
+        .danger { background: linear-gradient(135deg, #ff4444, #ff6b6b); }
+        
+        .route-option {
+            background: #1a1a1a;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+            cursor: pointer;
+        }
+        
+        .route-safe { border-left-color: #00c853; }
+        .route-medium { border-left-color: #ff9800; }
+        .route-danger { border-left-color: #ff4444; }
+        
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            width: 100%;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #0d5bba;
+            transform: translateY(-2px);
+        }
+        
+        .crime-marker {
+            border-radius: 50%;
+            opacity: 0.8;
+        }
+        
+        .crime-theft { background: #ff9800; }
+        .crime-violent { background: #ff4444; }
+        .crime-property { background: #ffeb3b; }
+        .crime-other { background: #9c27b0; }
+        
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .loading {
+            color: #66b2ff;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .time-slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .crime-details {
+            font-size: 12px;
+            color: #ccc;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Control Panel -->
+    <div class="control-panel">
+        <h2>🛡️ SafeRoute</h2>
+        <p style="color: #ccc; margin-bottom: 15px;">AI-Powered Safety Navigation</p>
+        
+        <div style="margin: 15px 0;">
+            <label>🕒 Time of Day:</label>
+            <input type="range" min="0" max="23" value="12" class="time-slider" id="timeSlider">
+            <div id="timeDisplay" style="text-align: center;">12:00 PM</div>
+        </div>
+        
+        <button onclick="analyzeCurrentArea()">🔍 Analyze This Area</button>
+        <button onclick="findSafestRoute()">🗺️ Find Safest Route</button>
+        <button onclick="toggleCrimeData()">📊 Toggle Crime Data</button>
+        
+        <div id="routeOptions" style="margin-top: 15px; display: none;">
+            <h4>Route Options:</h4>
+            <div class="route-option route-safe" onclick="selectRoute('safe')">
+                🟢 Safest Route (95% safe)
+                <div class="crime-details">+5 mins • Well-lit streets</div>
+            </div>
+            <div class="route-option route-medium" onclick="selectRoute('medium')">
+                🟡 Balanced Route (78% safe)
+                <div class="crime-details">Same time • Mixed areas</div>
+            </div>
+            <div class="route-option route-danger" onclick="selectRoute('danger')">
+                🔴 Fastest Route (45% safe)
+                <div class="crime-details">-3 mins • High-risk shortcuts</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Safety Panel -->
+    <div class="safety-panel">
+        <h3>📍 Area Safety</h3>
+        <div id="safetyScore" class="safety-score safe">
+            92/100
+        </div>
+        <div id="safetyDetails">
+            <div>✅ Violent Crime: Low</div>
+            <div>⚠️ Theft: Medium</div>
+            <div>✅ Lighting: Good</div>
+            <div>✅ Police Presence: High</div>
+            <div>🕒 Current Time: Day</div>
+        </div>
+    </div>
+    
+    <!-- Legend -->
+    <div class="legend">
+        <h4>Crime Types</h4>
+        <div class="legend-item">
+            <div class="legend-color crime-violent"></div>
+            <span>Violent Crime</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color crime-theft"></div>
+            <span>Theft/Burglary</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color crime-property"></div>
+            <span>Property Damage</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color crime-other"></div>
+            <span>Other Crimes</span>
+        </div>
+    </div>
+    
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize map
+        const map = L.map('map', {
+            center: [40.7128, -74.0060], // New York
+            zoom: 12,
+            zoomControl: true,
+            scrollWheelZoom: true,
+            dragging: true
+        });
+        
+        // Add dark map tiles
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap, © CartoDB',
+            subdomains: 'abcd'
+        }).addTo(map);
+
+        let crimeMarkers = [];
+        let showCrimeData = true;
+        let currentTime = 12;
+
+        // Sample crime data (in real app, this would come from police API)
+        const sampleCrimes = [
+            { lat: 40.713, lng: -74.009, type: 'theft', severity: 'medium', time: 'night', description: 'Phone theft reported' },
+            { lat: 40.715, lng: -74.012, type: 'violent', severity: 'high', time: 'night', description: 'Assault incident' },
+            { lat: 40.718, lng: -74.005, type: 'property', severity: 'low', time: 'day', description: 'Vandalism' },
+            { lat: 40.710, lng: -74.015, type: 'theft', severity: 'medium', time: 'both', description: 'Car break-in' },
+            { lat: 40.720, lng: -74.002, type: 'violent', severity: 'high', time: 'night', description: 'Robbery' },
+            { lat: 40.705, lng: -74.008, type: 'other', severity: 'low', time: 'day', description: 'Public disturbance' },
+            { lat: 40.725, lng: -74.020, type: 'theft', severity: 'medium', time: 'both', description: 'Bicycle theft' }
+        ];
+
+        // Time slider functionality
+        const timeSlider = document.getElementById('timeSlider');
+        const timeDisplay = document.getElementById('timeDisplay');
+
+        timeSlider.addEventListener('input', function() {
+            currentTime = parseInt(this.value);
+            const period = currentTime >= 6 && currentTime < 18 ? 'day' : 'night';
+            timeDisplay.textContent = `${currentTime}:00 ${currentTime >= 12 ? 'PM' : 'AM'} (${period})`;
+            updateSafetyScore();
+            updateCrimeDisplay();
+        });
+
+        // Load initial crime data
+        function loadCrimeData() {
+            clearCrimeMarkers();
+            
+            sampleCrimes.forEach(crime => {
+                const isVisible = shouldShowCrime(crime, currentTime);
+                if (isVisible && showCrimeData) {
+                    const marker = L.circleMarker([crime.lat, crime.lng], {
+                        radius: 8,
+                        className: `crime-marker crime-${crime.type}`
+                    }).addTo(map);
+                    
+                    marker.bindPopup(`
+                        <div style="color: #333;">
+                            <h4>🚨 ${crime.type.toUpperCase()} CRIME</h4>
+                            <p><strong>Severity:</strong> ${crime.severity}</p>
+                            <p><strong>Time:</strong> ${crime.time}</p>
+                            <p><strong>Details:</strong> ${crime.description}</p>
+                        </div>
+                    `);
+                    
+                    crimeMarkers.push(marker);
+                }
+            });
+        }
+
+        function shouldShowCrime(crime, currentHour) {
+            const isDaytime = currentHour >= 6 && currentHour < 18;
+            if (crime.time === 'both') return true;
+            if (crime.time === 'day' && isDaytime) return true;
+            if (crime.time === 'night' && !isDaytime) return true;
+            return false;
+        }
+
+        function clearCrimeMarkers() {
+            crimeMarkers.forEach(marker => map.removeLayer(marker));
+            crimeMarkers = [];
+        }
+
+        function toggleCrimeData() {
+            showCrimeData = !showCrimeData;
+            if (showCrimeData) {
+                loadCrimeData();
+            } else {
+                clearCrimeMarkers();
+            }
+        }
+
+        // AI Safety Analysis
+        function analyzeCurrentArea() {
+            const bounds = map.getBounds();
+            const center = bounds.getCenter();
+            
+            // Simulate AI analysis (in real app, this would use ML model)
+            const safetyScore = calculateSafetyScore(center.lat, center.lng, currentTime);
+            updateSafetyDisplay(safetyScore);
+            
+            // Show analysis area
+            L.rectangle(bounds, {
+                color: safetyScore.score > 70 ? "#00ff00" : safetyScore.score > 40 ? "#ffff00" : "#ff0000",
+                weight: 2,
+                fillOpacity: 0.1
+            }).addTo(map).bindPopup(`Area Analysis: ${safetyScore.score}/100`).openPopup();
+        }
+
+        function calculateSafetyScore(lat, lng, time) {
+            // Simulated AI algorithm (real implementation would use crime statistics, lighting data, etc.)
+            const baseScore = 85;
+            const timePenalty = time >= 18 || time < 6 ? -15 : 0; // Night penalty
+            const crimeDensity = getCrimeDensity(lat, lng);
+            const crimePenalty = crimeDensity * 10;
+            
+            const finalScore = Math.max(0, Math.min(100, baseScore + timePenalty - crimePenalty));
+            
+            return {
+                score: finalScore,
+                violentCrime: crimeDensity > 2 ? 'High' : crimeDensity > 1 ? 'Medium' : 'Low',
+                theft: crimeDensity > 1.5 ? 'High' : crimeDensity > 0.5 ? 'Medium' : 'Low',
+                lighting: time >= 18 || time < 6 ? 'Check' : 'Good',
+                police: crimeDensity > 2 ? 'High' : 'Medium'
+            };
+        }
+
+        function getCrimeDensity(lat, lng) {
+            // Count crimes within 0.01 degree radius
+            let count = 0;
+            sampleCrimes.forEach(crime => {
+                const distance = Math.sqrt(Math.pow(crime.lat - lat, 2) + Math.pow(crime.lng - lng, 2));
+                if (distance < 0.01 && shouldShowCrime(crime, currentTime)) {
+                    count++;
+                }
+            });
+            return count;
+        }
+
+        function updateSafetyDisplay(safetyData) {
+            const scoreElement = document.getElementById('safetyScore');
+            const detailsElement = document.getElementById('safetyDetails');
+            
+            scoreElement.textContent = `${safetyData.score}/100`;
+            scoreElement.className = 'safety-score ' + 
+                (safetyData.score > 70 ? 'safe' : safetyData.score > 40 ? 'medium' : 'danger');
+            
+            detailsElement.innerHTML = `
+                <div>${safetyData.violentCrime === 'Low' ? '✅' : '⚠️'} Violent Crime: ${safetyData.violentCrime}</div>
+                <div>${safetyData.theft === 'Low' ? '✅' : '⚠️'} Theft: ${safetyData.theft}</div>
+                <div>${safetyData.lighting === 'Good' ? '✅' : '🔍'} Lighting: ${safetyData.lighting}</div>
+                <div>${safetyData.police === 'High' ? '✅' : '⚠️'} Police Presence: ${safetyData.police}</div>
+                <div>🕒 Current Time: ${currentTime >= 6 && currentTime < 18 ? 'Day' : 'Night'}</div>
+            `;
+        }
+
+        function updateSafetyScore() {
+            const center = map.getCenter();
+            const safetyScore = calculateSafetyScore(center.lat, center.lng, currentTime);
+            updateSafetyDisplay(safetyScore);
+        }
+
+        function findSafestRoute() {
+            document.getElementById('routeOptions').style.display = 'block';
+            
+            // Simulate route calculation
+            // In real app, this would use routing API with safety weights
+        }
+
+        function selectRoute(type) {
+            alert(`Selected ${type} route! In real app, this would show the actual route on map.`);
+        }
+
+        function updateCrimeDisplay() {
+            if (showCrimeData) {
+                loadCrimeData();
+            }
+        }
+
+        // Initialize
+        loadCrimeData();
+        updateSafetyScore();
+        
+        // Update safety score when map moves
+        map.on('moveend', updateSafetyScore);
+
+        // Add some sample safe zones (parks, police stations)
+        L.marker([40.782, -74.005]).addTo(map)
+            .bindPopup('🏞️ Central Park - Safe Zone')
+            .openPopup();
+            
+        L.marker([40.720, -74.010]).addTo(map)
+            .bindPopup('👮 Police Station - High Safety')
+            .openPopup();
+    </script>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: 'Work Sans', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Dashboard Layout */
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar - SMALLER */
+        .sidebar {
+            width: 180px; /* Reduced from 250px */
+            background-color: #111111;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 20px; /* Reduced padding */
+            border-bottom: 1px solid #333;
+        }
+
+        .dashboard-title {
+            font-size: 1.3em; /* Smaller font */
+            font-weight: 300;
+            background: linear-gradient(90deg, #ffffff, #cccccc, #ffffff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shine 3s ease-in-out infinite;
+        }
+
+        @keyframes shine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 15px 0; /* Reduced padding */
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px; /* Smaller padding */
+            color: #ccc;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            font-size: 0.9em; /* Smaller font */
+        }
+
+        .nav-item:hover {
+            background-color: #1a1a1a;
+            color: #fff;
+            border-left-color: #00ff00;
+        }
+
+        .nav-item.active {
+            background-color: #1a1a1a;
+            color: #00ff00;
+            border-left-color: #00ff00;
+        }
+
+        .nav-icon {
+            font-size: 1.1em; /* Smaller icon */
+            margin-right: 10px;
+            width: 18px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 15px; /* Reduced padding */
+            border-top: 1px solid #333;
+        }
+
+        .logout-btn {
+            width: 100%;
+            background: none;
+            border: 1px solid #ff4444;
+            color: #ff4444;
+            padding: 10px; /* Smaller padding */
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-size: 0.8em; /* Smaller font */
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-area {
+            flex: 1;
+            background-color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #888;
+        }
+
+        .empty-state p {
+            font-size: 1.1em; /* Slightly smaller */
+            margin-bottom: 8px;
+        }
+        
+        /* Map Preview Styles */
+        .map-preview {
+            width: 90%;
+            height: 90%;
+            background-color: #0a1929;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid #333;
+            cursor: pointer;
+        }
+        
+        .map-header {
+            padding: 15px;
+            background-color: #132f4c;
+            border-bottom: 1px solid #1e4976;
+        }
+        
+        .map-title {
+            font-size: 1.2em;
+            color: #66b2ff;
+            margin-bottom: 5px;
+        }
+        
+        .map-subtitle {
+            font-size: 0.8em;
+            color: #a0a0a0;
+        }
+        
+        .map-container {
+            height: calc(100% - 70px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .map-placeholder {
+            width: 80%;
+            height: 80%;
+            background: linear-gradient(135deg, #1a2a6c, #2a3a7c, #3a4a8c);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #66b2ff;
+            font-size: 1.5em;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-placeholder::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 49%, rgba(102, 178, 255, 0.3) 50%, transparent 51%),
+                linear-gradient(transparent 49%, rgba(102, 178, 255, 0.3) 50%, transparent 51%);
+            background-size: 20px 20px;
+        }
+        
+        .map-placeholder::after {
+            content: "WORLD MAP";
+            position: relative;
+            z-index: 1;
+            background-color: rgba(10, 25, 41, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: 1px solid #66b2ff;
+        }
+        
+        .click-hint {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #66b2ff;
+            font-size: 0.9em;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; }
+            50% { opacity: 1; }
+            100% { opacity: 0.7; }
+        }
+
+        /* CHATBOT STYLES */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chatbot-toggle {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            border: none;
+            border-radius: 50%;
+            color: black;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 255, 0, 0.5);
+        }
+
+        .chatbot-window {
+            position: absolute;
+            bottom: 70px;
+            right: 0;
+            width: 350px;
+            height: 450px;
+            background: #111111;
+            border: 1px solid #00ff00;
+            border-radius: 15px;
+            display: none;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #00ff00, #00cc00);
+            color: black;
+            padding: 15px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: black;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .chatbot-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            background: #00ff00;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+
+        .user-message {
+            background: #333333;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chatbot-input {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #333;
+            gap: 10px;
+        }
+
+        .chatbot-input input {
+            flex: 1;
+            background: #222;
+            border: 1px solid #00ff00;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: white;
+            outline: none;
+        }
+
+        .chatbot-input input:focus {
+            border-color: #00cc00;
+        }
+
+        .chatbot-input button {
+            background: #00ff00;
+            border: none;
+            border-radius: 20px;
+            padding: 10px 15px;
+            color: black;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .chatbot-input button:hover {
+            background: #00cc00;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: #00ff00;
+            color: black;
+            padding: 10px 15px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            font-style: italic;
+        }
+
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            padding: 10px 15px;
+            border-top: 1px solid #333;
+        }
+
+        .quick-question {
+            background: #222;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-question:hover {
+            background: #00ff00;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="dashboard-title">GHOST DASHBOARD</div>
+            </div>
+            
+            <div class="sidebar-nav">
+                <!-- WORLD MAP in sidebar -->
+                <a href="#" class="nav-item active" id="world-map-link">
+                    <span class="nav-icon"></span>
+                    WORLD MAP
+                </a>
+                <!-- ORBITS item -->
+                <a href="#" class="nav-item" id="orbits-link">
+                    <span class="nav-icon"></span>
+                    ORBITS
+                </a>
+                <!-- MONITOR item -->
+                <a href="#" class="nav-item" id="monitor-link">
+                    <span class="nav-icon"></span>
+                    MONITOR
+                </a>
+                <!-- SUPREME item - ADDED -->
+                <a href="#" class="nav-item" id="supreme-link">
+                    <span class="nav-icon"></span>
+                    SUPREME
+                </a>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="logout()">LOGOUT</button>
+            </div>
+        </div>
+
+        <!-- Main Content - Map Preview -->
+        <div class="main-content">
+            <div class="content-area">
+                <div class="map-preview" id="map-preview">
+                    <div class="map-header">
+                        <div class="map-title">GLOBAL MONITORING MAP</div>
+                        <div class="map-subtitle">Real-time worldwide activity visualization</div>
+                    </div>
+                    <div class="map-container">
+                        <div class="map-placeholder"></div>
+                        <div class="click-hint">Click anywhere to open the full map</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <div class="chatbot-container">
+        <button class="chatbot-toggle" id="chatbotToggle">AI</button>
+        <div class="chatbot-window" id="chatbotWindow">
+            <div class="chatbot-header">
+                Ghost AI Assistant
+                <button class="chatbot-close" id="chatbotClose">X</button>
+            </div>
+            <div class="chatbot-messages" id="chatbotMessages">
+                <div class="message bot-message">
+                    Hello! I'm Ghost AI. How can I help you with the dashboard today?
+                </div>
+            </div>
+            <div class="quick-questions">
+                <div class="quick-question" onclick="askQuickQuestion('How to use maps?')">Maps</div>
+                <div class="quick-question" onclick="askQuickQuestion('Monitor features?')">Monitor</div>
+                <div class="quick-question" onclick="askQuickQuestion('System status?')">Status</div>
+                <div class="quick-question" onclick="askQuickQuestion('Help with navigation')">Help</div>
+                <div class="quick-question" onclick="askQuickQuestion('What is Supreme?')">Supreme</div>
+            </div>
+            <div class="chatbot-input">
+                <input type="text" id="chatbotInput" placeholder="Ask me anything..." onkeypress="handleChatInput(event)">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function logout() {
+            // Clear any stored data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            
+            // Redirect to login page
+            window.location.href = 'index.html';
+        }
+
+        // Load user data from URL parameters
+        function loadUserData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const username = urlParams.get('user') || 'User';
+            
+            // You can use the username if needed later
+            console.log('Welcome, ' + username);
+        }
+
+        // Redirect to different pages when clicking sidebar items
+        function setupNavigation() {
+            const mapPreview = document.getElementById('map-preview');
+            const worldMapLink = document.getElementById('world-map-link');
+            const orbitsLink = document.getElementById('orbits-link');
+            const monitorLink = document.getElementById('monitor-link');
+            const supremeLink = document.getElementById('supreme-link');
+            
+            mapPreview.addEventListener('click', function() {
+                window.location.href = 'map.html';
+            });
+            
+            worldMapLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'map.html';
+            });
+            
+            orbitsLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'orbit.html';
+            });
+            
+            monitorLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Check if we're in Electron (desktop app)
+                if (typeof require !== 'undefined' && require('electron')) {
+                    window.location.href = 'real-monitor.html';
+                } else {
+                    // Fallback for web version
+                    window.location.href = 'monitor.html';
+                }
+            });
+            
+            // SUPREME link redirects to sample.html
+            supremeLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'sample.html';
+            });
+        }
+
+        // CHATBOT FUNCTIONS
+        const chatbotToggle = document.getElementById('chatbotToggle');
+        const chatbotWindow = document.getElementById('chatbotWindow');
+        const chatbotClose = document.getElementById('chatbotClose');
+        const chatbotMessages = document.getElementById('chatbotMessages');
+        const chatbotInput = document.getElementById('chatbotInput');
+
+        chatbotToggle.addEventListener('click', () => {
+            chatbotWindow.style.display = chatbotWindow.style.display === 'flex' ? 'none' : 'flex';
+        });
+
+        chatbotClose.addEventListener('click', () => {
+            chatbotWindow.style.display = 'none';
+        });
+
+        function handleChatInput(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function askQuickQuestion(question) {
+            chatbotInput.value = question;
+            sendMessage();
+        }
+
+        function sendMessage() {
+            const message = chatbotInput.value.trim();
+            if (message === '') return;
+
+            // Add user message
+            addMessage(message, 'user');
+            chatbotInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            // Simulate AI response after delay
+            setTimeout(() => {
+                hideTypingIndicator();
+                const response = generateAIResponse(message);
+                addMessage(response, 'bot');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            messageDiv.textContent = text;
+            chatbotMessages.appendChild(messageDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot-message typing-indicator';
+            typingDiv.id = 'typingIndicator';
+            typingDiv.textContent = 'Ghost AI is typing...';
+            typingDiv.style.display = 'block';
+            chatbotMessages.appendChild(typingDiv);
+            chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+        }
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function generateAIResponse(userMessage) {
+            const lowerMessage = userMessage.toLowerCase();
+            
+            // Map related queries
+            if (lowerMessage.includes('map') || lowerMessage.includes('world map')) {
+                return "The World Map shows real-time global monitoring data. Click anywhere on the map preview to open the full interactive map with detailed surveillance features.";
+            }
+            
+            // Monitor related queries
+            if (lowerMessage.includes('monitor') || lowerMessage.includes('track')) {
+                return "The Monitor section provides real-time device and network surveillance. It includes activity logs, connection monitoring, and security alerts.";
+            }
+            
+            // Orbits related queries
+            if (lowerMessage.includes('orbit') || lowerMessage.includes('satellite')) {
+                return "Orbits displays satellite tracking data and orbital paths. You can monitor satellite positions and communication links in real-time.";
+            }
+            
+            // Supreme related queries - ADDED
+            if (lowerMessage.includes('supreme')) {
+                return "The Supreme section provides advanced system controls and premium features. This is where you can access elevated privileges and specialized tools.";
+            }
+            
+            // System status
+            if (lowerMessage.includes('status') || lowerMessage.includes('system')) {
+                return "System Status: All systems operational. Dashboard running smoothly. Security protocols active. No threats detected.";
+            }
+            
+            // Help queries
+            if (lowerMessage.includes('help') || lowerMessage.includes('how to')) {
+                return "I can help you with: Map navigation, Monitor usage, Orbit tracking, Supreme controls, Security features, and general system queries. What do you need help with?";
+            }
+            
+            // Greetings
+            if (lowerMessage.includes('hello') || lowerMessage.includes('hi') || lowerMessage.includes('hey')) {
+                return "Hello! I'm Ghost AI, your dashboard assistant. I can help you navigate the system and answer questions about monitoring features.";
+            }
+            
+            // Default response
+            const responses = [
+                "I understand you're asking about: '" + userMessage + "'. Could you provide more details?",
+                "I can help you with map navigation, monitoring features, orbit tracking, supreme controls, and system queries. What specifically do you need?",
+                "As your Ghost AI assistant, I'm here to help with dashboard operations and surveillance features.",
+                "I've logged your query. For detailed technical support, please specify which system component you need help with."
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            setupNavigation();
+            
+            // Add welcome message after a delay
+            setTimeout(() => {
+                if (!document.querySelector('.user-message')) {
+                    addMessage("Type 'help' for assistance or click the quick questions above!", 'bot');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

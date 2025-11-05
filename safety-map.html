@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Earth Satellite Tracker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow: hidden; height: 100vh; }
+        #earth-container { width: 100%; height: 100%; }
+        
+        .search-box {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            max-width: 300px;
+            font-family: Arial, sans-serif;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 10px;
+        }
+        
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .satellite-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #1a1a1a;
+            border-radius: 5px;
+            cursor: pointer;
+            border-left: 3px solid #66b2ff;
+        }
+        
+        .satellite-item:hover { background: #2a2a2a; }
+        .satellite-item.iss { border-left-color: #00ff00; }
+        .satellite-item.starlink { border-left-color: #ffaa00; }
+        .satellite-item.gps { border-left-color: #ff4444; }
+        .satellite-item.science { border-left-color: #aa00aa; }
+        .satellite-item.weather { border-left-color: #66b2ff; }
+        .satellite-item.comms { border-left-color: #ffff00; }
+    </style>
+</head>
+<body>
+    <div id="earth-container"></div>
+    
+    <div class="search-box">
+        <h3>🔍 Search Satellite</h3>
+        <input type="text" id="satelliteSearch" placeholder="Type satellite name..." onkeyup="searchSatellites()">
+        <div class="search-results" id="searchResults">
+            <!-- Search results will appear here -->
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.min.js"></script>
+    <script>
+        let scene, camera, renderer, earth;
+        let satellites = [];
+        let orbitLines = [];
+        let selectedSatellite = null;
+        let clock = new THREE.Clock();
+
+        const satelliteData = [
+            { id: 'iss', name: 'International Space Station', type: 'iss', altitude: 408, inclination: 51.6, period: 92, color: 0x00ff00, size: 0.02 },
+            { id: 'starlink', name: 'Starlink Group', type: 'starlink', altitude: 550, inclination: 53, period: 95, color: 0xffaa00, size: 0.01 },
+            { id: 'gps', name: 'GPS Satellite', type: 'gps', altitude: 20200, inclination: 55, period: 720, color: 0xff4444, size: 0.015 },
+            { id: 'hubble', name: 'Hubble Telescope', type: 'science', altitude: 547, inclination: 28.5, period: 95, color: 0xaa00aa, size: 0.015 },
+            { id: 'weather', name: 'Weather Satellite', type: 'weather', altitude: 824, inclination: 98.7, period: 102, color: 0x66b2ff, size: 0.012 },
+            { id: 'comms', name: 'Communications Sat', type: 'comms', altitude: 35786, inclination: 0, period: 1440, color: 0xffff00, size: 0.018 },
+            { id: 'tess', name: 'TESS Telescope', type: 'science', altitude: 108000, inclination: 37, period: 5900, color: 0xaa00aa, size: 0.01 },
+            { id: 'landsat', name: 'Landsat 9', type: 'science', altitude: 705, inclination: 98.2, period: 99, color: 0xaa00aa, size: 0.008 },
+            { id: 'goes', name: 'GOES Weather', type: 'weather', altitude: 35786, inclination: 0, period: 1440, color: 0x66b2ff, size: 0.01 },
+            { id: 'galileo', name: 'Galileo Navigation', type: 'gps', altitude: 23222, inclination: 56, period: 840, color: 0xff4444, size: 0.012 },
+            { id: 'oneweb', name: 'OneWeb Satellite', type: 'comms', altitude: 1200, inclination: 87.9, period: 109, color: 0xffff00, size: 0.009 },
+            { id: 'iridium', name: 'Iridium Satellite', type: 'comms', altitude: 780, inclination: 86.4, period: 100, color: 0xffff00, size: 0.008 }
+        ];
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 2.5;
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('earth-container').appendChild(renderer.domElement);
+            
+            const controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            
+            const ambientLight = new THREE.AmbientLight(0x333333);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(5, 3, 5);
+            scene.add(directionalLight);
+            
+            createEarth();
+            createSatellites();
+            createStars();
+            
+            window.addEventListener('resize', onWindowResize);
+            showAllSatellites(); // Show all satellites initially
+            animate();
+        }
+
+        function createEarth() {
+            const earthGeometry = new THREE.SphereGeometry(1, 32, 32);
+            const earthTexture = new THREE.TextureLoader().load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
+            const earthMaterial = new THREE.MeshPhongMaterial({ map: earthTexture });
+            earth = new THREE.Mesh(earthGeometry, earthMaterial);
+            scene.add(earth);
+        }
+
+        function createSatellites() {
+            satelliteData.forEach(sat => {
+                const orbitRadius = 1 + (sat.altitude / 6371);
+                const satGeometry = new THREE.SphereGeometry(sat.size, 8, 8);
+                const satMaterial = new THREE.MeshPhongMaterial({ color: sat.color });
+                const satellite = new THREE.Mesh(satGeometry, satMaterial);
+                
+                const angle = Math.random() * Math.PI * 2;
+                satellite.position.x = orbitRadius * Math.cos(angle);
+                satellite.position.z = orbitRadius * Math.sin(angle) * Math.cos(sat.inclination * Math.PI / 180);
+                satellite.position.y = orbitRadius * Math.sin(angle) * Math.sin(sat.inclination * Math.PI / 180);
+                
+                satellite.userData = { ...sat, orbitRadius, angle, speed: (2 * Math.PI) / (sat.period * 60) };
+                satellites.push(satellite);
+                scene.add(satellite);
+                
+                createOrbitLine(sat);
+            });
+        }
+
+        function createOrbitLine(sat) {
+            const orbitRadius = 1 + (sat.altitude / 6371);
+            const orbitPoints = [];
+            const segments = 64;
+            
+            for (let i = 0; i <= segments; i++) {
+                const theta = (i / segments) * Math.PI * 2;
+                const x = orbitRadius * Math.cos(theta);
+                const z = orbitRadius * Math.sin(theta) * Math.cos(sat.inclination * Math.PI / 180);
+                const y = orbitRadius * Math.sin(theta) * Math.sin(sat.inclination * Math.PI / 180);
+                orbitPoints.push(new THREE.Vector3(x, y, z));
+            }
+            
+            const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
+            const orbitMaterial = new THREE.LineBasicMaterial({ 
+                color: sat.color,
+                transparent: true,
+                opacity: 0.1
+            });
+            const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
+            orbitLine.visible = false;
+            orbitLines.push({ orbitLine, satelliteId: sat.id });
+            scene.add(orbitLine);
+        }
+
+        function createStars() {
+            const starGeometry = new THREE.BufferGeometry();
+            const starVertices = [];
+            
+            for (let i = 0; i < 10000; i++) {
+                starVertices.push(
+                    (Math.random() - 0.5) * 2000,
+                    (Math.random() - 0.5) * 2000,
+                    (Math.random() - 0.5) * 2000
+                );
+            }
+            
+            starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+            const stars = new THREE.Points(starGeometry, new THREE.PointsMaterial({ color: 0xffffff, size: 0.7 }));
+            scene.add(stars);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            
+            earth.rotation.y += 0.001 * delta * 60;
+            
+            satellites.forEach(satellite => {
+                const data = satellite.userData;
+                data.angle += data.speed * delta;
+                
+                satellite.position.x = data.orbitRadius * Math.cos(data.angle);
+                satellite.position.z = data.orbitRadius * Math.sin(data.angle) * Math.cos(data.inclination * Math.PI / 180);
+                satellite.position.y = data.orbitRadius * Math.sin(data.angle) * Math.sin(data.inclination * Math.PI / 180);
+            });
+            
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function searchSatellites() {
+            const searchTerm = document.getElementById('satelliteSearch').value.toLowerCase();
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+
+            if (searchTerm === '') {
+                showAllSatellites();
+                return;
+            }
+
+            const filteredSatellites = satelliteData.filter(sat => 
+                sat.name.toLowerCase().includes(searchTerm) || 
+                sat.type.toLowerCase().includes(searchTerm)
+            );
+
+            filteredSatellites.forEach(sat => {
+                const satItem = document.createElement('div');
+                satItem.className = `satellite-item ${sat.type}`;
+                satItem.innerHTML = `
+                    <strong>${getSatelliteEmoji(sat.type)} ${sat.name}</strong>
+                    <div style="font-size: 10px; color: #ccc;">
+                        Alt: ${sat.altitude}km | Type: ${sat.type}
+                    </div>
+                `;
+                satItem.onclick = () => selectSatellite(sat.id);
+                resultsContainer.appendChild(satItem);
+            });
+
+            // Hide all orbits first
+            orbitLines.forEach(item => {
+                item.orbitLine.visible = false;
+            });
+
+            // Show orbits of search results
+            filteredSatellites.forEach(sat => {
+                const orbit = orbitLines.find(item => item.satelliteId === sat.id);
+                if (orbit) {
+                    orbit.orbitLine.visible = true;
+                    orbit.orbitLine.material.opacity = 0.3;
+                }
+            });
+        }
+
+        function showAllSatellites() {
+            const resultsContainer = document.getElementById('searchResults');
+            resultsContainer.innerHTML = '';
+
+            satelliteData.forEach(sat => {
+                const satItem = document.createElement('div');
+                satItem.className = `satellite-item ${sat.type}`;
+                satItem.innerHTML = `
+                    <strong>${getSatelliteEmoji(sat.type)} ${sat.name}</strong>
+                    <div style="font-size: 10px; color: #ccc;">
+                        Alt: ${sat.altitude}km | Type: ${sat.type}
+                    </div>
+                `;
+                satItem.onclick = () => selectSatellite(sat.id);
+                resultsContainer.appendChild(satItem);
+            });
+
+            // Show all orbits
+            orbitLines.forEach(item => {
+                item.orbitLine.visible = true;
+                item.orbitLine.material.opacity = 0.1;
+            });
+        }
+
+        function selectSatellite(satelliteId) {
+            // Hide all orbit lines
+            orbitLines.forEach(item => {
+                item.orbitLine.visible = false;
+            });
+            
+            // Show selected orbit line
+            const selectedOrbit = orbitLines.find(item => item.satelliteId === satelliteId);
+            if (selectedOrbit) {
+                selectedOrbit.orbitLine.visible = true;
+                selectedOrbit.orbitLine.material.opacity = 0.3;
+            }
+            
+            // Find and focus on satellite
+            const satellite = satellites.find(sat => sat.userData.id === satelliteId);
+            if (satellite) {
+                camera.position.copy(satellite.position).multiplyScalar(1.8);
+                camera.lookAt(0, 0, 0);
+                selectedSatellite = satellite;
+            }
+        }
+
+        function getSatelliteEmoji(type) {
+            const emojis = {
+                'iss': '🛰️',
+                'starlink': '✨',
+                'gps': '📡',
+                'science': '🔭',
+                'weather': '🌤️',
+                'comms': '📶',
+                'default': '🛰️'
+            };
+            return emojis[type] || emojis.default;
+        }
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Real Monitor</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500&display=swap');
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            background: #0a0a0a; 
+            color: #ffffff; 
+            font-family: 'Work Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .monitor-heading {
+                position: relative;
+                top: 10px;
+                right: 10px;
+                font-size: 18px;
+                text-align: right;
+                padding: 10px;
+            }
+            
+            .back-button {
+                position: relative;
+                top: 10px;
+                left: 10px;
+                padding: 8px 15px;
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+            
+            .real-monitor-heading {
+                font-size: 24px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            .activity-list {
+                height: 300px;
+            }
+        }
+        
+        /* Top Right Monitor Heading */
+        .monitor-heading {
+            position: fixed;
+            top: 30px;
+            right: 40px;
+            font-size: 24px;
+            font-weight: 500;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            z-index: 100;
+        }
+        
+        /* Back Button */
+        .back-button {
+            position: fixed;
+            top: 30px;
+            left: 40px;
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 500;
+            z-index: 100;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        /* Typing Animations - FASTER */
+        .middle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 28px;
+            font-weight: 300;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            width: 0;
+            animation: typing2 2s forwards, fadeOut 0.5s forwards;
+            animation-delay: 0.5s, 3s;
+        }
+        
+        .permission-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 400;
+            text-align: center;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards, fadeOut 0.5s forwards;
+            animation-delay: 3.5s, 5.5s;
+        }
+        
+        /* Permission Popup */
+        .permission-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #00ff00;
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+            animation-delay: 6s;
+            display: none;
+            max-width: 90%;
+            box-sizing: border-box;
+        }
+        
+        .permission-popup h3 {
+            color: #00ff00;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .permission-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .permission-btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 500;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .allow-btn {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .deny-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #666;
+        }
+        
+        /* Real Monitoring Interface */
+        .monitoring-interface {
+            opacity: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 15px;
+            text-align: center;
+        }
+        
+        .real-monitor-heading {
+            font-size: 32px;
+            font-weight: 500;
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            color: #00ff00;
+            font-size: 18px;
+        }
+        
+        .current-app {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid #333;
+        }
+        
+        .current-app h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: #1a1a1a;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: #00ff00;
+        }
+        
+        .activity-list {
+            background: #1a1a1a;
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            flex: 1;
+        }
+        
+        .activity-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: #2a2a2a;
+            border-radius: 5px;
+            border-left: 4px solid #00ff00;
+            word-break: break-word;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .launch-btn {
+            background: #00ff00;
+            color: #000;
+        }
+        
+        .stop-btn {
+            background: #ff4444;
+            color: #fff;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .launch-btn:hover {
+            background: #00cc00;
+        }
+        
+        .stop-btn:hover {
+            background: #cc0000;
+        }
+        
+        .control-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Device Detection */
+        .device-info {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #333;
+            text-align: center;
+            font-size: 14px;
+            color: #00ff00;
+        }
+        
+        /* Animations - FASTER */
+        @keyframes typing2 {
+            0% { width: 0; }
+            100% { width: min(550px, 90vw); }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Right Monitor Heading -->
+    <div class="monitor-heading">MONITOR</div>
+    
+    <!-- Back Button -->
+    <button class="back-button" onclick="goBack()">← BACK</button>
+    
+    <!-- Typing Animation Sequence - FASTER -->
+    <div class="middle-text">THIS HELPS TO MONITOR YOUR DEVICE</div>
+    <div class="permission-text">ALLOW PERMISSIONS TO MONITOR</div>
+    
+    <!-- Permission Popup -->
+    <div class="permission-popup" id="permissionPopup">
+        <h3>🔐 DEVICE MONITORING</h3>
+        <p id="permissionText">Ghost Monitor wants to track your device activities and usage patterns.</p>
+        <p style="color: #00ff00; margin: 15px 0;" id="capabilitiesText">This will track browser activity and device interactions.</p>
+        <div class="permission-buttons">
+            <button class="permission-btn allow-btn" onclick="allowMonitoring()">ALLOW ACCESS</button>
+            <button class="permission-btn deny-btn" onclick="denyMonitoring()">DENY</button>
+        </div>
+    </div>
+    
+    <!-- Real Monitoring Interface -->
+    <div class="monitoring-interface" id="monitoringInterface">
+        <div class="header">
+            <div class="real-monitor-heading">RAGNING MONITOR</div>
+            <div class="status-indicator" id="statusIndicator">● ACTIVE</div>
+        </div>
+
+        <!-- Device Info -->
+        <div class="device-info" id="deviceInfo">
+            📱 Mobile Device Detected - Tracking Browser Activities
+        </div>
+
+        <div class="current-app">
+            <h3 id="activityTitle">CURRENT ACTIVITY:</h3>
+            <div id="currentApp" style="color: #00ff00; font-size: 18px; margin-top: 10px;">Waiting for permission...</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>ACTIVE TIME</h3>
+                <div class="stat-number" id="activeTime">0m 0s</div>
+                <div>Monitoring duration</div>
+            </div>
+            <div class="stat-card">
+                <h3>INTERACTIONS</h3>
+                <div class="stat-number" id="appsTracked">0</div>
+                <div id="interactionsLabel">Touch events</div>
+            </div>
+            <div class="stat-card">
+                <h3>DEVICE</h3>
+                <div class="stat-number" id="systemStatus" style="font-size: 16px;">MOBILE</div>
+                <div>Platform</div>
+            </div>
+        </div>
+
+        <div class="control-buttons">
+            <button class="control-btn launch-btn" onclick="launchRealMonitor()" id="launchBtn">🚀 START MONITORING</button>
+            <button class="control-btn stop-btn" onclick="stopMonitoring()" id="stopBtn" disabled>⏹️ STOP MONITORING</button>
+        </div>
+
+        <div class="activity-list" id="activityLog">
+            <div style="text-align: center; color: #666; padding: 20px;">
+                Ready to monitor your device activities
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Detect device type
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isDesktop = !isMobile;
+        
+        // Activities based on device type
+        const mobileActivities = [
+            '📱 Touch screen interaction',
+            '👆 Tapping on elements',
+            '🔄 Scrolling content',
+            '📲 Swiping gestures',
+            '🎯 Focusing on elements',
+            '📝 Text input detected',
+            '🖱️ Virtual keyboard usage',
+            '📞 Device rotation change',
+            '🔋 Battery status monitoring',
+            '📶 Network connectivity check'
+        ];
+        
+        const desktopActivities = [
+            'chrome.exe - Google Chrome',
+            'Code.exe - Visual Studio Code', 
+            'notepad.exe - Untitled - Notepad',
+            'explorer.exe - Documents',
+            'Spotify.exe - Spotify',
+            'Discord.exe - Discord',
+            'msedge.exe - Microsoft Edge',
+            'WINWORD.EXE - Document - Word',
+            'EXCEL.EXE - Workbook - Excel',
+            'Teams.exe - Microsoft Teams'
+        ];
+
+        let monitoringInterval;
+        let isMonitoring = false;
+        let startTime;
+        let interactionCount = 0;
+        let currentActivities = isMobile ? mobileActivities : desktopActivities;
+
+        // Initialize device-specific settings
+        function initializeDevice() {
+            if (isMobile) {
+                document.getElementById('activityTitle').textContent = 'CURRENT ACTIVITY:';
+                document.getElementById('interactionsLabel').textContent = 'Touch events';
+                document.getElementById('systemStatus').textContent = 'MOBILE';
+                document.getElementById('deviceInfo').style.display = 'block';
+                document.getElementById('permissionText').textContent = 'Ghost Monitor wants to track your mobile device activities and touch interactions.';
+                document.getElementById('capabilitiesText').textContent = 'This will track: Touch events, Screen interactions, Device orientation';
+            } else {
+                document.getElementById('activityTitle').textContent = 'CURRENT ACTIVE WINDOW:';
+                document.getElementById('interactionsLabel').textContent = 'App switches';
+                document.getElementById('systemStatus').textContent = 'DESKTOP';
+                document.getElementById('deviceInfo').style.display = 'none';
+                document.getElementById('permissionText').textContent = 'Ghost Monitor wants to access your system to track active applications and windows.';
+                document.getElementById('capabilitiesText').textContent = 'This will track: Active applications, Window focus, System activities';
+            }
+        }
+
+        // Back button function
+        function goBack() {
+            if (isMonitoring) {
+                stopMonitoring();
+            }
+            window.history.back();
+        }
+
+        // Show permission popup after animations
+        setTimeout(() => {
+            document.getElementById('permissionPopup').style.display = 'block';
+        }, 6500);
+
+        // Allow monitoring
+        function allowMonitoring() {
+            document.getElementById('permissionPopup').style.display = 'none';
+            document.getElementById('monitoringInterface').style.opacity = '1';
+            document.getElementById('currentApp').textContent = 'Ready for monitoring!';
+            addToActivityLog('✅ Permission granted - Ready to start monitoring', new Date().toLocaleTimeString());
+            addToActivityLog(isMobile ? '📱 Mobile device tracking enabled' : '🖥️ Desktop monitoring ready', new Date().toLocaleTimeString());
+        }
+
+        // Deny monitoring
+        function denyMonitoring() {
+            document.getElementById('permissionPopup').style.display = 'none';
+            document.getElementById('monitoringInterface').style.opacity = '1';
+            document.getElementById('currentApp').textContent = 'Monitoring disabled';
+            addToActivityLog('❌ Permission denied - Limited functionality', new Date().toLocaleTimeString());
+            document.getElementById('launchBtn').style.display = 'none';
+            document.getElementById('stopBtn').style.display = 'none';
+        }
+
+        // Start monitoring
+        function launchRealMonitor() {
+            if (isMonitoring) return;
+            
+            isMonitoring = true;
+            startTime = new Date();
+            interactionCount = 0;
+            
+            document.getElementById('launchBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('statusIndicator').textContent = '● MONITORING';
+            
+            addToActivityLog('🚀 Starting device monitoring...', new Date().toLocaleTimeString());
+            
+            // Start appropriate monitoring based on device
+            if (isMobile) {
+                startMobileMonitoring();
+            } else {
+                startDesktopMonitoring();
+            }
+        }
+
+        // Mobile-specific monitoring
+        function startMobileMonitoring() {
+            addToActivityLog('📱 Mobile activity tracking started', new Date().toLocaleTimeString());
+            addToActivityLog('👆 Touch and interaction monitoring active', new Date().toLocaleTimeString());
+            
+            // Track touch events
+            document.addEventListener('touchstart', function() {
+                if (isMonitoring) {
+                    interactionCount++;
+                    document.getElementById('appsTracked').textContent = interactionCount;
+                    updateCurrentActivity('Touch interaction detected');
+                    
+                    if (interactionCount % 5 === 0) {
+                        addToActivityLog(`👆 ${interactionCount} touch events recorded`, new Date().toLocaleTimeString());
+                    }
+                }
+            });
+            
+            // Track device orientation
+            window.addEventListener('deviceorientation', function() {
+                if (isMonitoring) {
+                    updateCurrentActivity('Device orientation change');
+                }
+            });
+            
+            // Start activity simulation
+            startActivitySimulation();
+        }
+
+        // Desktop-specific monitoring
+        function startDesktopMonitoring() {
+            addToActivityLog('🖥️ Desktop application tracking started', new Date().toLocaleTimeString());
+            
+            // For desktop, we would normally launch Python app
+            // But for demo, we'll simulate
+            if (isDesktop) {
+                fetch('/launch-monitor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addToActivityLog('✅ Desktop monitor launched', new Date().toLocaleTimeString());
+                    }
+                })
+                .catch(error => {
+                    addToActivityLog('⚠️ Running in simulation mode', new Date().toLocaleTimeString());
+                });
+            }
+            
+            startActivitySimulation();
+        }
+
+        // Activity simulation for both devices
+        function startActivitySimulation() {
+            let lastActivity = '';
+            let index = 0;
+            
+            monitoringInterval = setInterval(() => {
+                if (!isMonitoring) return;
+                
+                // Update active time
+                const currentTime = new Date();
+                const diff = Math.floor((currentTime - startTime) / 1000);
+                const minutes = Math.floor(diff / 60);
+                const seconds = diff % 60;
+                document.getElementById('activeTime').textContent = `${minutes}m ${seconds}s`;
+                
+                // Simulate activity changes
+                if (Math.random() > 0.5) {
+                    const randomActivity = currentActivities[Math.floor(Math.random() * currentActivities.length)];
+                    if (randomActivity !== lastActivity) {
+                        document.getElementById('currentApp').textContent = randomActivity;
+                        lastActivity = randomActivity;
+                    }
+                }
+                
+                // Show system messages
+                index++;
+                if (index % 8 === 0) {
+                    const messages = isMobile ? [
+                        '📱 Monitoring touch patterns',
+                        '🔄 Tracking screen interactions',
+                        '📊 Analyzing usage behavior',
+                        '⚡ Real-time mobile tracking'
+                    ] : [
+                        '📊 Monitoring system performance',
+                        '🔄 Tracking application usage',
+                        '💾 Logging activity data',
+                        '⚡ Real-time desktop monitoring'
+                    ];
+                    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                    addToActivityLog(randomMessage, new Date().toLocaleTimeString());
+                }
+                
+            }, 3000);
+        }
+
+        function stopMonitoring() {
+            if (!isMonitoring) return;
+            
+            isMonitoring = false;
+            document.getElementById('launchBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('statusIndicator').textContent = '● STOPPED';
+            document.getElementById('statusIndicator').style.color = '#ff4444';
+            
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+            }
+            
+            const endTime = new Date();
+            const totalSeconds = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            
+            document.getElementById('currentApp').textContent = 'Monitoring stopped';
+            addToActivityLog('⏹️ Monitoring stopped', new Date().toLocaleTimeString());
+            addToActivityLog(`📊 Session: ${minutes}m ${seconds}s, ${interactionCount} interactions`, new Date().toLocaleTimeString());
+        }
+
+        function updateCurrentActivity(activity) {
+            document.getElementById('currentApp').textContent = activity;
+        }
+
+        function addToActivityLog(message, timestamp) {
+            const log = document.getElementById('activityLog');
+            
+            if (log.children.length === 1 && log.children[0].style.textAlign === 'center') {
+                log.innerHTML = '';
+            }
+            
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+            activityItem.innerHTML = `
+                <div>${message}</div>
+                <small style="color: #888;">${timestamp}</small>
+            `;
+            
+            log.insertBefore(activityItem, log.firstChild);
+            
+            if (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        // Initialize device settings
+        initializeDevice();
+        
+        // Add initial message
+        setTimeout(() => {
+            addToActivityLog('👻 Ghost Monitor initialized', new Date().toLocaleTimeString());
+            addToActivityLog(isMobile ? '📱 Mobile device detected' : '🖥️ Desktop device detected', new Date().toLocaleTimeString());
+        }, 7000);
+    </script>
+</body>
+</html>

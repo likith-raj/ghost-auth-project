@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced 3D Earth Satellite Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="orbit.css">
+</head>
+<body>
+    <div id="earth-container">
+        <div class="loading" id="loading">
+            <div><i class="fas fa-satellite fa-spin"></i> Loading Real Earth & Satellites...</div>
+            <div style="font-size: 0.8em; margin-top: 10px; color: #66b2ff;">500+ Satellites from 80+ Countries</div>
+            <div style="font-size: 0.7em; margin-top: 5px; color: #888;">Including GPS, Starlink, ISS, and more</div>
+        </div>
+    </div>
+    
+    <div class="status-info" id="statusInfo">Earth Rotation: REAL • Select a satellite to view details</div>
+    
+    <div class="notification" id="notification"></div>
+    
+    <div class="controls">
+        <h3 style="font-weight: 300; margin-bottom: 10px; color: #66b2ff;"><i class="fas fa-satellite"></i> CONTROLS</h3>
+        <button class="control-btn active" onclick="toggleAutoRotation()" id="autoRotateBtn"><i class="fas fa-globe-americas"></i> Earth Rotation: REAL</button>
+        <button class="control-btn" onclick="toggleOrbits()" id="orbitBtn"><i class="fas fa-circle-notch"></i> Show Orbits: OFF</button>
+        <button class="control-btn" onclick="resetView()"><i class="fas fa-home"></i> Reset View</button>
+        <button class="control-btn active" onclick="toggleRealTime()" id="realTimeBtn"><i class="fas fa-clock"></i> Real Time: ON</button>
+        
+        <div class="control-row">
+            <button class="control-btn" onclick="toggleSatelliteType('all')" id="allSatsBtn"><i class="fas fa-globe"></i> All Satellites</button>
+            <button class="control-btn" onclick="toggleSatelliteType('active')" id="activeSatsBtn"><i class="fas fa-play-circle"></i> Active Only</button>
+        </div>
+    </div>
+
+    <div class="country-search">
+        <h3 style="font-weight: 300; margin-bottom: 15px; color: #66b2ff;"><i class="fas fa-flag"></i> SEARCH SATELLITES</h3>
+        <input type="text" id="countrySearch" placeholder="Search 250+ countries or satellite names..." oninput="searchCountries()">
+        
+        <div class="search-filters">
+            <button class="filter-btn active" onclick="setFilter('all')" id="filterAll">All</button>
+            <button class="filter-btn" onclick="setFilter('active')" id="filterActive">Active</button>
+            <button class="filter-btn" onclick="setFilter('communication')" id="filterComm">Communication</button>
+            <button class="filter-btn" onclick="setFilter('navigation')" id="filterNav">Navigation</button>
+            <button class="filter-btn" onclick="setFilter('weather')" id="filterWeather">Weather</button>
+        </div>
+        
+        <div class="country-results" id="countryResults">
+            <!-- Country results will appear here -->
+        </div>
+        
+        <div class="country-satellites" id="countrySatellites" style="display: none;">
+            <h4 style="font-weight: 300; margin: 15px 0 10px 0; color: #66b2ff;" id="countrySatellitesTitle">Satellites</h4>
+            <div class="satellite-results" id="satelliteResults">
+                <!-- Country satellites will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <div class="info-panel">
+        <h3 style="font-weight: 300; margin-bottom: 15px; color: #66b2ff;"><i class="fas fa-info-circle"></i> SATELLITE INFORMATION</h3>
+        <div id="satelliteInfo">
+            <div class="satellite-details">
+                <div class="detail-item">Select a satellite to view real images and data</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="orbit.js"></script>
+</body>
+</html>

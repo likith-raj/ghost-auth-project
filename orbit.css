@@ -1,0 +1,530 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&display=swap');
+
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
+
+body { 
+    background: #000000; 
+    overflow: hidden; 
+    height: 100vh;
+    font-family: 'Work Sans', sans-serif;
+}
+
+#earth-container { 
+    width: 100%; 
+    height: 100%; 
+    position: relative; 
+}
+
+/* Loading Styles */
+.loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 1.2em;
+    background: rgba(0,0,0,0.8);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    text-align: center;
+    z-index: 1000;
+}
+
+/* Country Search */
+.country-search {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.95);
+    color: white;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    width: 350px;
+    font-family: 'Work Sans', sans-serif;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 100, 255, 0.2);
+}
+
+.country-search input {
+    width: 100%;
+    padding: 10px;
+    background: #111111;
+    border: 1px solid #333;
+    border-radius: 5px;
+    color: white;
+    margin-bottom: 12px;
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13px;
+}
+
+.search-filters {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.filter-btn {
+    background: #111111;
+    border: 1px solid #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.7em;
+    transition: all 0.3s;
+    flex: 1;
+    text-align: center;
+}
+
+.filter-btn.active {
+    background: #66b2ff;
+    color: black;
+    border-color: #66b2ff;
+}
+
+.filter-btn:hover {
+    background: #222222;
+    border-color: #66b2ff;
+}
+
+.country-results {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.country-item {
+    padding: 10px;
+    margin: 4px 0;
+    background: #111111;
+    border-radius: 5px;
+    cursor: pointer;
+    border-left: 3px solid #66b2ff;
+    font-size: 0.8em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.country-item:hover { 
+    background: #222222;
+    transform: translateX(3px);
+    border-left-color: #ff4444;
+}
+
+.country-flag {
+    width: 24px;
+    height: 16px;
+    border-radius: 2px;
+    object-fit: cover;
+    border: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.country-satellites {
+    border-top: 1px solid #333;
+    padding-top: 10px;
+}
+
+.satellite-results {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.satellite-item {
+    padding: 10px;
+    margin: 4px 0;
+    background: #111111;
+    border-radius: 5px;
+    cursor: pointer;
+    border-left: 3px solid #66b2ff;
+    font-size: 0.8em;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.satellite-item:hover { 
+    background: #222222;
+    transform: translateX(3px);
+    border-left-color: #ff4444;
+}
+
+.satellite-image {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.satellite-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.satellite-text strong {
+    display: block;
+    font-size: 0.9em;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.satellite-text small {
+    color: #888;
+    font-size: 0.75em;
+}
+
+/* Info Panel */
+.info-panel {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.95);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    width: 400px;
+    font-family: 'Work Sans', sans-serif;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 20px rgba(0, 100, 255, 0.2);
+}
+
+.satellite-details {
+    margin-top: 15px;
+}
+
+.detail-item {
+    margin: 8px 0;
+    font-size: 0.85em;
+    color: #ccc;
+    line-height: 1.4;
+}
+
+.real-image {
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+    margin: 10px 0;
+    object-fit: cover;
+    border: 1px solid #333;
+}
+
+/* Controls */
+.controls {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.95);
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    width: 280px;
+    box-shadow: 0 0 20px rgba(0, 100, 255, 0.2);
+}
+
+.control-btn {
+    background: #111111;
+    border: 1px solid #333;
+    color: white;
+    padding: 8px 12px;
+    margin: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'Work Sans', sans-serif;
+    transition: all 0.3s;
+    font-size: 0.85em;
+    width: calc(100% - 10px);
+    text-align: left;
+}
+
+.control-btn:hover {
+    background: #222222;
+    border-color: #66b2ff;
+    transform: translateY(-2px);
+}
+
+.control-btn.active {
+    background: #66b2ff;
+    color: black;
+    border-color: #66b2ff;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px;
+}
+
+.control-row .control-btn {
+    width: 48%;
+}
+
+/* Status Info */
+.status-info {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.95);
+    color: #66b2ff;
+    padding: 8px 16px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    font-size: 0.8em;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    white-space: nowrap;
+    box-shadow: 0 0 15px rgba(0, 100, 255, 0.3);
+}
+
+/* Scrollbars */
+.country-results::-webkit-scrollbar,
+.satellite-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+.country-results::-webkit-scrollbar-track,
+.satellite-results::-webkit-scrollbar-track {
+    background: #111111;
+    border-radius: 3px;
+}
+
+.country-results::-webkit-scrollbar-thumb,
+.satellite-results::-webkit-scrollbar-thumb {
+    background: #66b2ff;
+    border-radius: 3px;
+}
+
+.country-results::-webkit-scrollbar-thumb:hover,
+.satellite-results::-webkit-scrollbar-thumb:hover {
+    background: #ff4444;
+}
+
+/* Country Stats */
+.country-stats {
+    font-size: 0.8em;
+    color: #66b2ff;
+    text-align: center;
+    padding: 5px;
+    background: rgba(102, 178, 255, 0.1);
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+/* Notification */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 380px;
+    background: rgba(0,0,0,0.9);
+    color: #66b2ff;
+    padding: 10px 15px;
+    border-radius: 5px;
+    border: 1px solid #333;
+    z-index: 1000;
+    font-size: 0.8em;
+    animation: fadeInOut 3s ease-in-out;
+    display: none;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(-10px); }
+    10% { opacity: 1; transform: translateY(0); }
+    90% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Status Indicators */
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-operational { background: #00ff00; }
+.status-degraded { background: #ffff00; }
+.status-failed { background: #ff0000; }
+.status-decommissioned { background: #666666; }
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .country-search {
+        width: 320px;
+    }
+    
+    .info-panel {
+        width: 350px;
+    }
+}
+
+@media (max-height: 700px) {
+    .country-search {
+        max-height: 75vh;
+    }
+    
+    .country-results {
+        max-height: 150px;
+    }
+    
+    .satellite-results {
+        max-height: 200px;
+    }
+}
+/* Improved Satellite Info Styles */
+.satellite-details-card {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(100, 150, 255, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.satellite-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+    padding-bottom: 10px;
+}
+
+.satellite-header h3 {
+    margin: 0;
+    color: #66b2ff;
+    font-size: 1.3em;
+    font-weight: 600;
+    flex: 1;
+}
+
+.satellite-status {
+    background: rgba(0, 255, 0, 0.2);
+    color: #00ff00;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.satellite-image-container {
+    text-align: center;
+    margin: 15px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+}
+
+.satellite-real-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.no-image {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    font-size: 1.1em;
+}
+
+.satellite-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+    border-left: 3px solid #66b2ff;
+}
+
+.info-label {
+    font-size: 0.8em;
+    color: #88aaff;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.info-value {
+    font-size: 0.9em;
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.satellite-description {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #66b2ff;
+}
+
+.satellite-description p {
+    margin: 0;
+    color: #cccccc;
+    line-height: 1.5;
+    font-size: 0.9em;
+}
+
+.welcome-message {
+    text-align: center;
+    padding: 30px 20px;
+    color: #66b2ff;
+}
+
+.welcome-message h3 {
+    margin-bottom: 10px;
+    font-size: 1.4em;
+}
+
+.welcome-message p {
+    color: #88aaff;
+    font-size: 1em;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .satellite-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .satellite-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .satellite-real-image {
+        max-height: 150px;
+    }
+}

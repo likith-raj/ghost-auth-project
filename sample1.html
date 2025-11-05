@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUPREME - Country Dashboard</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Work Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid #ff0000;
+            margin-bottom: 30px;
+        }
+        
+        .supreme-title {
+            font-size: 64px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 10px;
+            color: #ff0000;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #ffffff;
+        }
+        
+        .country-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .flag-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .flag-container img {
+            width: 160px;
+            height: auto;
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
+        }
+        
+        .country-name {
+            font-size: 36px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #ff0000;
+            margin-top: 10px;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: #ff0000;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2);
+        }
+        
+        .card-title {
+            font-size: 20px;
+            color: #ff0000;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #222;
+        }
+        
+        .stat:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-name {
+            color: #ccc;
+        }
+        
+        .stat-value {
+            color: #fff;
+            font-weight: 600;
+        }
+        
+        .history-section {
+            margin-top: 40px;
+        }
+        
+        .history-content {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 25px;
+            line-height: 1.6;
+            color: #ccc;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #ff0000;
+            font-style: italic;
+        }
+        
+        .back-btn {
+            background: #ff0000;
+            color: black;
+            border: none;
+            padding: 15px 40px;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Work Sans', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 40px auto;
+            width: 250px;
+        }
+        
+        .back-btn:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.7;
+            }
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .supreme-title {
+                font-size: 48px;
+                letter-spacing: 6px;
+            }
+            
+            .country-name {
+                font-size: 28px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .supreme-title {
+                font-size: 36px;
+                letter-spacing: 4px;
+            }
+            
+            .country-name {
+                font-size: 24px;
+            }
+            
+            .back-btn {
+                width: 100%;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="supreme-title pulse">WELCOME TO SUPREME</div>
+            <div class="subtitle">Country Intelligence Dashboard</div>
+        </div>
+        
+        <div class="country-header">
+            <div class="flag-container">
+                <img src="https://flagcdn.com/w160/in.png" alt="Flag of India" id="countryFlag">
+                <div class="country-name" id="countryName">India</div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="card">
+                <div class="card-title">Economic Data</div>
+                <div class="stat">
+                    <span class="stat-name">GDP (Nominal)</span>
+                    <span class="stat-value" id="gdp">$3.737 trillion</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">GDP Rank</span>
+                    <span class="stat-value" id="gdpRank">5th</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">GDP Growth</span>
+                    <span class="stat-value" id="gdpGrowth">6.3%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Inflation Rate</span>
+                    <span class="stat-value" id="inflation">4.7%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Unemployment</span>
+                    <span class="stat-value" id="unemployment">7.1%</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Global Rankings</div>
+                <div class="stat">
+                    <span class="stat-name">Population</span>
+                    <span class="stat-value" id="populationRank">1st</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Military Power</span>
+                    <span class="stat-value" id="militaryRank">4th</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Human Development</span>
+                    <span class="stat-value" id="hdiRank">132nd</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Innovation Index</span>
+                    <span class="stat-value" id="innovationRank">40th</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Corruption Perception</span>
+                    <span class="stat-value" id="corruptionRank">93rd</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Political Data</div>
+                <div class="stat">
+                    <span class="stat-name">Government Type</span>
+                    <span class="stat-value" id="govType">Federal Parliamentary Republic</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Leader</span>
+                    <span class="stat-value" id="leader">Narendra Modi</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Political Stability</span>
+                    <span class="stat-value" id="stability">Moderate</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Freedom Index</span>
+                    <span class="stat-value" id="freedom">Partly Free</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Democracy Index</span>
+                    <span class="stat-value" id="democracy">Flawed Democracy</span>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-title">Key Statistics</div>
+                <div class="stat">
+                    <span class="stat-name">Population</span>
+                    <span class="stat-value" id="population">1.428 billion</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Area</span>
+                    <span class="stat-value" id="area">3.287 million km²</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Capital</span>
+                    <span class="stat-value" id="capital">New Delhi</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Currency</span>
+                    <span class="stat-value" id="currency">Indian Rupee (INR)</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-name">Internet Users</span>
+                    <span class="stat-value" id="internet">830 million</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="history-section">
+            <div class="card-title">Country History & Overview</div>
+            <div class="history-content" id="historyContent">
+                <p>India, officially the Republic of India, is a country in South Asia. It is the seventh-largest country by area and the most populous country as of June 2023. Bounded by the Indian Ocean on the south, the Arabian Sea on the southwest, and the Bay of Bengal on the southeast, it shares land borders with Pakistan to the west; China, Nepal, and Bhutan to the north; and Bangladesh and Myanmar to the east.</p>
+                
+                <p>India has been a federal republic since 1950, governed through a democratic parliamentary system. It is a pluralistic, multilingual and multi-ethnic society. India's population grew from 361 million in 1951 to almost 1.4 billion in 2022. During the same time, its nominal per capita income increased from US$64 annually to US$2,601, and its literacy rate from 16.6% to 74%. From being a comparatively destitute country in 1951, India has become a fast-growing major economy and a hub for information technology services, with an expanding middle class.</p>
+                
+                <p>India has been a member of World Trade Organization since 1 January 1995. It ranks among the top 10 in both military expenditure and number of active military personnel. It has nuclear weapons since 1974, and is a regional power and a potential superpower.</p>
+            </div>
+        </div>
+        
+        <button class="back-btn" onclick="goBack()">Back to Country Select</button>
+    </div>
+
+    <script>
+        // Function to go back to country selection
+        function goBack() {
+            // In a real implementation, this would redirect to your country selection page
+            alert("This would redirect back to the country selection page");
+            // window.location.href = "index.html"; // Uncomment this line in your actual implementation
+        }
+        
+        // In a real implementation, you would fetch this data from APIs
+        // For demonstration, we're using static data for India
+        
+        // Function to simulate live data updates
+        function updateLiveData() {
+            // Simulate live data changes
+            const gdpElement = document.getElementById('gdp');
+            const growthElement = document.getElementById('gdpGrowth');
+            
+            // Random small fluctuations to simulate live data
+            const gdpChange = (Math.random() * 0.2 - 0.1).toFixed(2);
+            const growthChange = (Math.random() * 0.1 - 0.05).toFixed(2);
+            
+            // Update values (in a real app, these would come from APIs)
+            setTimeout(() => {
+                // This is just for demonstration - real implementation would use actual API data
+                console.log("Simulating live data update...");
+            }, 5000);
+        }
+        
+        // Initialize the dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // In a real implementation, you would:
+            // 1. Get the selected country from localStorage or URL parameters
+            // 2. Fetch data from various APIs based on the country
+            // 3. Update all the elements with real data
+            
+            // For now, we're using static data for India
+            updateLiveData();
+            
+            // Set up periodic updates (every 30 seconds)
+            setInterval(updateLiveData, 30000);
+        });
+        
+        // Example of how to integrate with real APIs (commented out for demo)
+        /*
+        // World Bank API for economic data
+        async function fetchEconomicData(countryCode) {
+            try {
+                const response = await fetch(`https://api.worldbank.org/v2/country/${countryCode}/indicator/NY.GDP.MKTP.CD?format=json`);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error("Error fetching economic data:", error);
+                return null;
+            }
+        }
+        
+        // Rest Countries API for general info
+        async function fetchCountryInfo(countryCode) {
+            try {
+                const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+                const data = await response.json();
+                return data[0];
+            } catch (error) {
+                console.error("Error fetching country info:", error);
+                return null;
+            }
+        }
+        */
+    </script>
+</body>
+</html>
