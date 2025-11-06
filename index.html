@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghost Portal</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500&display=swap');
@@ -230,6 +230,80 @@
             color: #666;
             font-style: italic;
         }
+        /* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+        height: auto;
+        min-height: 100vh;
+        align-items: flex-start;
+        padding-top: 20px;
+    }
+    
+    .auth-container {
+        flex-direction: column;
+        padding: 20px;
+        gap: 0;
+    }
+    
+    .form-divider {
+        display: none;
+    }
+    
+    .auth-form {
+        width: 100%;
+    }
+    
+    .typing-container {
+        font-size: 2.5em;
+    }
+    
+    .auth-title {
+        font-size: 1.5em;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 14px;
+    }
+    
+    .auth-btn {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .typing-container {
+        font-size: 2em;
+    }
+    
+    .auth-container {
+        padding: 15px;
+    }
+    
+    .auth-title {
+        font-size: 1.3em;
+        margin-bottom: 20px;
+    }
+}
+/* Fix for very small screens */
+@media (max-width: 360px) {
+    .auth-container {
+        padding: 10px;
+    }
+    
+    .typing-container {
+        font-size: 1.8em;
+    }
+    
+    .auth-title {
+        font-size: 1.2em;
+    }
+}
     </style>
 </head>
 <body>
@@ -533,14 +607,21 @@
                     registerMessage.textContent = data.message || 'Account created successfully! 🎉';
                     registerBtn.textContent = 'SUCCESS!';
                     
-                    // Save token and auto-login
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
-                    
-                    // 🎯 REDIRECT TO DASHBOARD
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html?user=' + encodeURIComponent(data.user.username) + '&email=' + encodeURIComponent(data.user.email);
-                    }, 1000);
+                    // Show success message and go back to login form
+setTimeout(() => {
+    showLogin();
+    loginMessage.className = 'message success';
+    loginMessage.textContent = 'Account created successfully! Please login with your credentials.';
+    
+    // Clear registration form
+    registerForm.reset();
+    document.getElementById('passwordStrength').style.display = 'none';
+    document.getElementById('passwordMatch').style.display = 'none';
+    
+    // Reset button
+    registerBtn.disabled = false;
+    registerBtn.textContent = 'REGISTER';
+}, 1000);
                 } else {
                     registerMessage.className = 'message error';
                     registerMessage.textContent = data.message || 'Registration failed!';
