@@ -482,14 +482,17 @@ app.post('/launch-monitor', (req, res) => {
 });
 
 // 🚀 START SERVER - OPTIMIZED FOR RENDER 🚀
-const PORT = process.env.PORT || 5000;
-const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+// 🚀 WINDOWS-STYLE STARTUP
+console.log("Microsoft Windows [Version 10.0.26200.7019]");
+console.log("(c) Microsoft Corporation. All rights reserved.\n");
+console.log(`D:\\ghost-auth>node server.js`);
+console.log(`Starting Ghost Auth Server...`);
+console.log(`Port: ${process.env.PORT || 5000}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`Users: ${users.length}`);
+console.log(`Server ready for connections...\n`);
 
-app.listen(PORT, HOST, () => {
-  console.log(`🚀 Ghost Auth Server running on ${HOST}:${PORT}`);
-  console.log(`📁 Data directory: ${DATA_DIR}`);
-  console.log(`👥 Registered users: ${users.length}`);
-  console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Set' : 'Using default'}`);
-  console.log(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`✅ Ready to accept connections!`);
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => {
+  // Server is running silently
 });
