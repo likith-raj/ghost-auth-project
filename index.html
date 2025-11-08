@@ -398,7 +398,33 @@
 
     <script>
         // API Base URL
-       const API_BASE = '/api';
+        const API_BASE = '/api';
+
+        // ✅ SAVE CREDENTIALS WHEN USER TYPES
+        document.getElementById('loginUsername').addEventListener('input', function() {
+            localStorage.setItem('savedUsername', this.value);
+        });
+
+        document.getElementById('loginPassword').addEventListener('input', function() {
+            localStorage.setItem('savedPassword', this.value);
+        });
+
+        // ✅ LOAD SAVED CREDENTIALS WHEN PAGE LOADS
+        window.onload = function() {
+            // Load saved credentials
+            const savedUsername = localStorage.getItem('savedUsername');
+            const savedPassword = localStorage.getItem('savedPassword');
+            
+            if (savedUsername) {
+                document.getElementById('loginUsername').value = savedUsername;
+            }
+            if (savedPassword) {
+                document.getElementById('loginPassword').value = savedPassword;
+            }
+            
+            // Start typing effect
+            typeEffect();
+        };
 
         // Welcome text typing effect
         const texts = ["WELCOME!", "TO GHOST"];
@@ -462,9 +488,6 @@
             document.getElementById('loginMessage').className = 'message';
         }
         
-        // Start welcome effect
-        window.onload = typeEffect;
-
         // Real-time password strength checking
         document.getElementById('regPassword').addEventListener('input', function() {
             const password = this.value;
@@ -602,26 +625,26 @@
 
                 const data = await response.json();
 
-                if (response.ok) {
+                if (data.success) {
                     registerMessage.className = 'message success';
                     registerMessage.textContent = data.message || 'Account created successfully! 🎉';
                     registerBtn.textContent = 'SUCCESS!';
                     
                     // Show success message and go back to login form
-setTimeout(() => {
-    showLogin();
-    loginMessage.className = 'message success';
-    loginMessage.textContent = 'Account created successfully! Please login with your credentials.';
-    
-    // Clear registration form
-    registerForm.reset();
-    document.getElementById('passwordStrength').style.display = 'none';
-    document.getElementById('passwordMatch').style.display = 'none';
-    
-    // Reset button
-    registerBtn.disabled = false;
-    registerBtn.textContent = 'REGISTER';
-}, 1000);
+                    setTimeout(() => {
+                        showLogin();
+                        loginMessage.className = 'message success';
+                        loginMessage.textContent = 'Account created successfully! Please login with your credentials.';
+                        
+                        // Clear registration form
+                        registerForm.reset();
+                        document.getElementById('passwordStrength').style.display = 'none';
+                        document.getElementById('passwordMatch').style.display = 'none';
+                        
+                        // Reset button
+                        registerBtn.disabled = false;
+                        registerBtn.textContent = 'REGISTER';
+                    }, 1000);
                 } else {
                     registerMessage.className = 'message error';
                     registerMessage.textContent = data.message || 'Registration failed!';
@@ -670,18 +693,18 @@ setTimeout(() => {
 
                 const data = await response.json();
 
-                if (response.ok) {
+                if (data.success) {
                     loginMessage.className = 'message success';
                     loginMessage.textContent = data.message || 'Login successful!';
                     loginBtn.textContent = 'SUCCESS!';
                     
                     // Save token to localStorage
-                    localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user));
+                    localStorage.setItem('ghostToken', data.token);
+                    localStorage.setItem('ghostUser', JSON.stringify(data.user));
                     
-                    // 🎯 REDIRECT TO DASHBOARD
+                    // REDIRECT TO DASHBOARD
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html?user=' + encodeURIComponent(data.user.username) + '&email=' + encodeURIComponent(data.user.email);
+                        window.location.href = 'dashboard.html';
                     }, 1000);
                 } else {
                     loginMessage.className = 'message error';
