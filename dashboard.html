@@ -25,6 +25,8 @@
         .dashboard-container {
             display: flex;
             height: 100vh;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
         /* Sidebar - SMALLER */
@@ -34,6 +36,13 @@
             border-right: 1px solid #333;
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
         }
 
         .sidebar-header {
@@ -120,6 +129,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
         }
 
         .content-area {
@@ -229,6 +239,34 @@
             0% { opacity: 0.7; }
             50% { opacity: 1; }
             100% { opacity: 0.7; }
+        }
+
+        /* Sidebar Toggle Button - FIXED POSITION */
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 165px; /* Positioned at the edge of the sidebar */
+            background: #111111;
+            border: 1px solid #333;
+            color: #00ff00;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed ~ .sidebar-toggle {
+            left: 10px; /* Move to left when sidebar is collapsed */
+        }
+
+        .sidebar-toggle:hover {
+            background: #1a1a1a;
+            transform: scale(1.1);
         }
 
         /* CHATBOT STYLES */
@@ -396,7 +434,7 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="dashboard-title">GHOST DASHBOARD</div>
             </div>
@@ -417,16 +455,31 @@
                     <span class="nav-icon"></span>
                     MONITOR
                 </a>
-                <!-- SUPREME item - ADDED -->
+                <!-- SUPREME item -->
                 <a href="#" class="nav-item" id="supreme-link">
                     <span class="nav-icon"></span>
                     SUPREME
+                </a>
+                <!-- DISEASE item - ADDED UNDER SUPREME -->
+                <a href="#" class="nav-item" id="disease-link">
+                    <span class="nav-icon"></span>
+                    DISEASE
+                </a>
+                <!-- CHECK SPEED item - NEW ADDITION -->
+                <a href="#" class="nav-item" id="speed-link">
+                    <span class="nav-icon"></span>
+                    CHECK SPEED
                 </a>
             </div>
             
             <div class="sidebar-footer">
                 <button class="logout-btn" onclick="logout()">LOGOUT</button>
             </div>
+        </div>
+
+        <!-- Sidebar Toggle Button - MOVED OUTSIDE SIDEBAR -->
+        <div class="sidebar-toggle" id="sidebarToggle">
+            <span id="toggleIcon">←</span>
         </div>
 
         <!-- Main Content - Map Preview -->
@@ -465,6 +518,8 @@
                 <div class="quick-question" onclick="askQuickQuestion('System status?')">Status</div>
                 <div class="quick-question" onclick="askQuickQuestion('Help with navigation')">Help</div>
                 <div class="quick-question" onclick="askQuickQuestion('What is Supreme?')">Supreme</div>
+                <div class="quick-question" onclick="askQuickQuestion('What is Disease section?')">Disease</div>
+                <div class="quick-question" onclick="askQuickQuestion('Check speed features?')">Speed</div>
             </div>
             <div class="chatbot-input">
                 <input type="text" id="chatbotInput" placeholder="Ask me anything..." onkeypress="handleChatInput(event)">
@@ -492,6 +547,24 @@
             console.log('Welcome, ' + username);
         }
 
+        // Toggle sidebar visibility
+        function setupSidebarToggle() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                
+                // Change arrow direction based on sidebar state
+                if (sidebar.classList.contains('collapsed')) {
+                    toggleIcon.textContent = '→'; // Point right when sidebar is hidden
+                } else {
+                    toggleIcon.textContent = '←'; // Point left when sidebar is visible
+                }
+            });
+        }
+
         // Redirect to different pages when clicking sidebar items
         function setupNavigation() {
             const mapPreview = document.getElementById('map-preview');
@@ -499,6 +572,8 @@
             const orbitsLink = document.getElementById('orbits-link');
             const monitorLink = document.getElementById('monitor-link');
             const supremeLink = document.getElementById('supreme-link');
+            const diseaseLink = document.getElementById('disease-link');
+            const speedLink = document.getElementById('speed-link'); // NEW
             
             mapPreview.addEventListener('click', function() {
                 window.location.href = 'map.html';
@@ -529,6 +604,18 @@
             supremeLink.addEventListener('click', function(e) {
                 e.preventDefault();
                 window.location.href = 'sample.html';
+            });
+            
+            // DISEASE link redirects to disease.html
+            diseaseLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'disease.html';
+            });
+            
+            // CHECK SPEED link redirects to check.html - NEW
+            speedLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'check.html';
             });
         }
 
@@ -620,9 +707,19 @@
                 return "Orbits displays satellite tracking data and orbital paths. You can monitor satellite positions and communication links in real-time.";
             }
             
-            // Supreme related queries - ADDED
+            // Supreme related queries
             if (lowerMessage.includes('supreme')) {
                 return "The Supreme section provides advanced system controls and premium features. This is where you can access elevated privileges and specialized tools.";
+            }
+            
+            // Disease related queries - ADDED
+            if (lowerMessage.includes('disease')) {
+                return "The Disease section provides access to global health monitoring, outbreak tracking, and epidemiological data visualization tools.";
+            }
+            
+            // Speed related queries - NEW
+            if (lowerMessage.includes('speed') || lowerMessage.includes('check speed')) {
+                return "The Check Speed section allows you to test network connectivity, measure data transfer rates, and monitor system performance metrics in real-time.";
             }
             
             // System status
@@ -632,7 +729,7 @@
             
             // Help queries
             if (lowerMessage.includes('help') || lowerMessage.includes('how to')) {
-                return "I can help you with: Map navigation, Monitor usage, Orbit tracking, Supreme controls, Security features, and general system queries. What do you need help with?";
+                return "I can help you with: Map navigation, Monitor usage, Orbit tracking, Supreme controls, Disease monitoring, Speed tests, Security features, and general system queries. What do you need help with?";
             }
             
             // Greetings
@@ -643,7 +740,7 @@
             // Default response
             const responses = [
                 "I understand you're asking about: '" + userMessage + "'. Could you provide more details?",
-                "I can help you with map navigation, monitoring features, orbit tracking, supreme controls, and system queries. What specifically do you need?",
+                "I can help you with map navigation, monitoring features, orbit tracking, supreme controls, disease monitoring, speed tests, and system queries. What specifically do you need?",
                 "As your Ghost AI assistant, I'm here to help with dashboard operations and surveillance features.",
                 "I've logged your query. For detailed technical support, please specify which system component you need help with."
             ];
@@ -655,6 +752,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
             setupNavigation();
+            setupSidebarToggle(); // Initialize sidebar toggle
             
             // Add welcome message after a delay
             setTimeout(() => {
