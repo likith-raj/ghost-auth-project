@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete World Flag Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            transition: background-color 0.3s ease;
+        }
+
+        body.light-mode {
+            background: #f5f5f5;
+        }
+
+        body.dark-mode {
+            background: #0a0a0a;
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .theme-toggle {
+            background: rgba(30, 30, 30, 0.9);
+            color: #fff;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .country-flag {
+            border-radius: 3px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .country-flag:hover {
+            transform: scale(1.1);
+        }
+
+        .info-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 300px;
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* Light theme for Leaflet */
+        .light-mode .leaflet-container {
+            background: #f8f9fa;
+        }
+
+        .light-mode .leaflet-control-zoom a {
+            background: #ffffff !important;
+            color: #333 !important;
+            border: 1px solid #ddd !important;
+            transition: all 0.3s ease;
+        }
+
+        .light-mode .leaflet-control-zoom a:hover {
+            background: #f0f0f0 !important;
+            border-color: #bbb !important;
+        }
+
+        .light-mode .leaflet-control-attribution {
+            background: rgba(255, 255, 255, 0.8) !important;
+            color: #666 !important;
+        }
+
+        .light-mode .leaflet-control-attribution a {
+            color: #0078ff !important;
+        }
+
+        .light-mode .leaflet-popup-content-wrapper {
+            background: #ffffff !important;
+            color: #333 !important;
+            border-radius: 8px !important;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .light-mode .leaflet-popup-tip {
+            background: #ffffff !important;
+        }
+
+        /* Dark theme for Leaflet */
+        .dark-mode .leaflet-container {
+            background: #000 !important;
+        }
+
+        .dark-mode .leaflet-control-zoom a {
+            background: rgba(30, 30, 30, 0.9) !important;
+            color: #e0e0e0 !important;
+            border: 1px solid #444 !important;
+            transition: all 0.3s ease;
+        }
+
+        .dark-mode .leaflet-control-zoom a:hover {
+            background: rgba(50, 50, 50, 0.9) !important;
+            border-color: #4a9eff !important;
+        }
+
+        .dark-mode .leaflet-control-attribution {
+            background: rgba(20, 20, 20, 0.8) !important;
+            color: #888 !important;
+        }
+
+        .dark-mode .leaflet-control-attribution a {
+            color: #4a9eff !important;
+        }
+
+        .dark-mode .leaflet-popup-content-wrapper {
+            background: rgba(30, 30, 30, 0.95) !important;
+            color: #e0e0e0 !important;
+            border-radius: 8px !important;
+            border: 1px solid #444;
+        }
+
+        .dark-mode .leaflet-popup-tip {
+            background: rgba(30, 30, 30, 0.95) !important;
+            border: 1px solid #444;
+        }
+
+        /* Smooth transitions for map elements */
+        .leaflet-tile {
+            transition: opacity 0.3s ease;
+        }
+
+        .leaflet-zoom-animated {
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+    </style>
+</head>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="mobile.css">
+</head>
+<body class="dark-mode">
+    <button class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <div class="info-panel" id="countryInfo">
+        <div style="text-align: center;">
+            <i class="fas fa-flag" style="color: #4a9eff; margin-bottom: 8px;"></i>
+            <div style="font-size: 14px; color: #ccc;">Click on any flag to see country information</div>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <i class="fas fa-spinner fa-spin" style="margin-right: 10px;"></i>
+        Loading World Flag Map...
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map with smooth controls
+        const map = L.map('map', {
+            zoomControl: true,
+            fadeAnimation: true,
+            zoomAnimation: true,
+            markerZoomAnimation: true,
+            transform3DLimit: 500,
+            inertia: true,
+            inertiaDeceleration: 3000,
+            inertiaMaxSpeed: 1500,
+            easeLinearity: 0.3,
+            worldCopyJump: false,
+            maxBoundsViscosity: 0.7
+        }).setView([20, 0], 2);
+
+        // Tile layers
+        const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20,
+        });
+
+        const lightLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 19,
+        });
+
+        // Start with dark layer
+        darkLayer.addTo(map);
+
+        // Comprehensive country data with coordinates and flag URLs
+        const countries = [
+            
+            // North America
+            { name: "United States", lat: 39.8283, lng: -98.5795, flag: "https://flagcdn.com/w320/us.png", capital: "Washington D.C.", population: "331M", continent: "North America" },
+            { name: "Canada", lat: 56.1304, lng: -106.3468, flag: "https://flagcdn.com/w320/ca.png", capital: "Ottawa", population: "38M", continent: "North America" },
+            { name: "Mexico", lat: 23.6345, lng: -102.5528, flag: "https://flagcdn.com/w320/mx.png", capital: "Mexico City", population: "126M", continent: "North America" },
+            
+            // Central America & Caribbean
+            { name: "Guatemala", lat: 15.7835, lng: -90.2308, flag: "https://flagcdn.com/w320/gt.png", capital: "Guatemala City", population: "17M", continent: "North America" },
+            { name: "Cuba", lat: 21.5218, lng: -77.7812, flag: "https://flagcdn.com/w320/cu.png", capital: "Havana", population: "11M", continent: "North America" },
+            { name: "Dominican Republic", lat: 18.7357, lng: -70.1627, flag: "https://flagcdn.com/w320/do.png", capital: "Santo Domingo", population: "10M", continent: "North America" },
+            { name: "Haiti", lat: 18.9712, lng: -72.2852, flag: "https://flagcdn.com/w320/ht.png", capital: "Port-au-Prince", population: "11M", continent: "North America" },
+            { name: "Jamaica", lat: 18.1096, lng: -77.2975, flag: "https://flagcdn.com/w320/jm.png", capital: "Kingston", population: "3M", continent: "North America" },
+            { name: "Costa Rica", lat: 9.7489, lng: -83.7534, flag: "https://flagcdn.com/w320/cr.png", capital: "San José", population: "5M", continent: "North America" },
+            { name: "Panama", lat: 8.5379, lng: -80.7821, flag: "https://flagcdn.com/w320/pa.png", capital: "Panama City", population: "4M", continent: "North America" },
+            
+            // South America
+            { name: "Brazil", lat: -14.2350, lng: -51.9253, flag: "https://flagcdn.com/w320/br.png", capital: "Brasília", population: "214M", continent: "South America" },
+            { name: "Argentina", lat: -38.4161, lng: -63.6167, flag: "https://flagcdn.com/w320/ar.png", capital: "Buenos Aires", population: "45M", continent: "South America" },
+            { name: "Colombia", lat: 4.5709, lng: -74.2973, flag: "https://flagcdn.com/w320/co.png", capital: "Bogotá", population: "51M", continent: "South America" },
+            { name: "Peru", lat: -9.1900, lng: -75.0152, flag: "https://flagcdn.com/w320/pe.png", capital: "Lima", population: "33M", continent: "South America" },
+            { name: "Venezuela", lat: 6.4238, lng: -66.5897, flag: "https://flagcdn.com/w320/ve.png", capital: "Caracas", population: "28M", continent: "South America" },
+            { name: "Chile", lat: -35.6751, lng: -71.5430, flag: "https://flagcdn.com/w320/cl.png", capital: "Santiago", population: "19M", continent: "South America" },
+            { name: "Ecuador", lat: -1.8312, lng: -78.1834, flag: "https://flagcdn.com/w320/ec.png", capital: "Quito", population: "18M", continent: "South America" },
+            { name: "Bolivia", lat: -16.2902, lng: -63.5887, flag: "https://flagcdn.com/w320/bo.png", capital: "Sucre", population: "12M", continent: "South America" },
+            { name: "Paraguay", lat: -23.4425, lng: -58.4438, flag: "https://flagcdn.com/w320/py.png", capital: "Asunción", population: "7M", continent: "South America" },
+            { name: "Uruguay", lat: -32.5228, lng: -55.7658, flag: "https://flagcdn.com/w320/uy.png", capital: "Montevideo", population: "3M", continent: "South America" },
+            
+            // Europe
+            { name: "United Kingdom", lat: 55.3781, lng: -3.4360, flag: "https://flagcdn.com/w320/gb.png", capital: "London", population: "67M", continent: "Europe" },
+            { name: "France", lat: 46.6034, lng: 1.8883, flag: "https://flagcdn.com/w320/fr.png", capital: "Paris", population: "68M", continent: "Europe" },
+            { name: "Germany", lat: 51.1657, lng: 10.4515, flag: "https://flagcdn.com/w320/de.png", capital: "Berlin", population: "83M", continent: "Europe" },
+            { name: "Italy", lat: 41.8719, lng: 12.5674, flag: "https://flagcdn.com/w320/it.png", capital: "Rome", population: "59M", continent: "Europe" },
+            { name: "Spain", lat: 40.4637, lng: -3.7492, flag: "https://flagcdn.com/w320/es.png", capital: "Madrid", population: "47M", continent: "Europe" },
+            { name: "Ukraine", lat: 48.3794, lng: 31.1656, flag: "https://flagcdn.com/w320/ua.png", capital: "Kyiv", population: "41M", continent: "Europe" },
+            { name: "Poland", lat: 51.9194, lng: 19.1451, flag: "https://flagcdn.com/w320/pl.png", capital: "Warsaw", population: "38M", continent: "Europe" },
+            { name: "Romania", lat: 45.9432, lng: 24.9668, flag: "https://flagcdn.com/w320/ro.png", capital: "Bucharest", population: "19M", continent: "Europe" },
+            { name: "Netherlands", lat: 52.1326, lng: 5.2913, flag: "https://flagcdn.com/w320/nl.png", capital: "Amsterdam", population: "17M", continent: "Europe" },
+            { name: "Belgium", lat: 50.5039, lng: 4.4699, flag: "https://flagcdn.com/w320/be.png", capital: "Brussels", population: "12M", continent: "Europe" },
+            { name: "Sweden", lat: 60.1282, lng: 18.6435, flag: "https://flagcdn.com/w320/se.png", capital: "Stockholm", population: "10M", continent: "Europe" },
+            { name: "Norway", lat: 60.4720, lng: 8.4689, flag: "https://flagcdn.com/w320/no.png", capital: "Oslo", population: "5M", continent: "Europe" },
+            { name: "Finland", lat: 61.9241, lng: 25.7482, flag: "https://flagcdn.com/w320/fi.png", capital: "Helsinki", population: "6M", continent: "Europe" },
+            { name: "Denmark", lat: 56.2639, lng: 9.5018, flag: "https://flagcdn.com/w320/dk.png", capital: "Copenhagen", population: "6M", continent: "Europe" },
+            { name: "Switzerland", lat: 46.8182, lng: 8.2275, flag: "https://flagcdn.com/w320/ch.png", capital: "Bern", population: "9M", continent: "Europe" },
+            { name: "Austria", lat: 47.5162, lng: 14.5501, flag: "https://flagcdn.com/w320/at.png", capital: "Vienna", population: "9M", continent: "Europe" },
+            { name: "Portugal", lat: 39.3999, lng: -8.2245, flag: "https://flagcdn.com/w320/pt.png", capital: "Lisbon", population: "10M", continent: "Europe" },
+            { name: "Greece", lat: 39.0742, lng: 21.8243, flag: "https://flagcdn.com/w320/gr.png", capital: "Athens", population: "10M", continent: "Europe" },
+            
+            // Asia
+            { name: "China", lat: 35.8617, lng: 104.1954, flag: "https://flagcdn.com/w320/cn.png", capital: "Beijing", population: "1.4B", continent: "Asia" },
+            { name: "India", lat: 20.5937, lng: 78.9629, flag: "https://flagcdn.com/w320/in.png", capital: "New Delhi", population: "1.38B", continent: "Asia" },
+            { name: "Japan", lat: 36.2048, lng: 138.2529, flag: "https://flagcdn.com/w320/jp.png", capital: "Tokyo", population: "126M", continent: "Asia" },
+            { name: "Russia", lat: 61.5240, lng: 105.3188, flag: "https://flagcdn.com/w320/ru.png", capital: "Moscow", population: "144M", continent: "Asia" },
+            { name: "Indonesia", lat: -0.7893, lng: 113.9213, flag: "https://flagcdn.com/w320/id.png", capital: "Jakarta", population: "273M", continent: "Asia" },
+            { name: "Pakistan", lat: 30.3753, lng: 69.3451, flag: "https://flagcdn.com/w320/pk.png", capital: "Islamabad", population: "225M", continent: "Asia" },
+            { name: "Bangladesh", lat: 23.6850, lng: 90.3563, flag: "https://flagcdn.com/w320/bd.png", capital: "Dhaka", population: "165M", continent: "Asia" },
+            { name: "Philippines", lat: 12.8797, lng: 121.7740, flag: "https://flagcdn.com/w320/ph.png", capital: "Manila", population: "109M", continent: "Asia" },
+            { name: "Vietnam", lat: 14.0583, lng: 108.2772, flag: "https://flagcdn.com/w320/vn.png", capital: "Hanoi", population: "97M", continent: "Asia" },
+            { name: "Turkey", lat: 38.9637, lng: 35.2433, flag: "https://flagcdn.com/w320/tr.png", capital: "Ankara", population: "84M", continent: "Asia" },
+            { name: "Iran", lat: 32.4279, lng: 53.6880, flag: "https://flagcdn.com/w320/ir.png", capital: "Tehran", population: "84M", continent: "Asia" },
+            { name: "Thailand", lat: 15.8700, lng: 100.9925, flag: "https://flagcdn.com/w320/th.png", capital: "Bangkok", population: "70M", continent: "Asia" },
+            { name: "South Korea", lat: 35.9078, lng: 127.7669, flag: "https://flagcdn.com/w320/kr.png", capital: "Seoul", population: "51M", continent: "Asia" },
+            { name: "Myanmar", lat: 21.9162, lng: 95.9560, flag: "https://flagcdn.com/w320/mm.png", capital: "Naypyidaw", population: "54M", continent: "Asia" },
+            { name: "Iraq", lat: 33.2232, lng: 43.6793, flag: "https://flagcdn.com/w320/iq.png", capital: "Baghdad", population: "40M", continent: "Asia" },
+            { name: "Afghanistan", lat: 33.9391, lng: 67.7100, flag: "https://flagcdn.com/w320/af.png", capital: "Kabul", population: "38M", continent: "Asia" },
+            { name: "Saudi Arabia", lat: 23.8859, lng: 45.0792, flag: "https://flagcdn.com/w320/sa.png", capital: "Riyadh", population: "35M", continent: "Asia" },
+            { name: "Malaysia", lat: 4.2105, lng: 101.9758, flag: "https://flagcdn.com/w320/my.png", capital: "Kuala Lumpur", population: "32M", continent: "Asia" },
+            
+            // Africa
+            { name: "Nigeria", lat: 9.0820, lng: 8.6753, flag: "https://flagcdn.com/w320/ng.png", capital: "Abuja", population: "206M", continent: "Africa" },
+            { name: "Ethiopia", lat: 9.1450, lng: 40.4897, flag: "https://flagcdn.com/w320/et.png", capital: "Addis Ababa", population: "115M", continent: "Africa" },
+            { name: "Egypt", lat: 26.8206, lng: 30.8025, flag: "https://flagcdn.com/w320/eg.png", capital: "Cairo", population: "104M", continent: "Africa" },
+            { name: "Democratic Republic of the Congo", lat: -4.0383, lng: 21.7587, flag: "https://flagcdn.com/w320/cd.png", capital: "Kinshasa", population: "89M", continent: "Africa" },
+            { name: "South Africa", lat: -30.5595, lng: 22.9375, flag: "https://flagcdn.com/w320/za.png", capital: "Pretoria", population: "60M", continent: "Africa" },
+            { name: "Tanzania", lat: -6.3690, lng: 34.8888, flag: "https://flagcdn.com/w320/tz.png", capital: "Dodoma", population: "60M", continent: "Africa" },
+            { name: "Kenya", lat: -0.0236, lng: 37.9062, flag: "https://flagcdn.com/w320/ke.png", capital: "Nairobi", population: "54M", continent: "Africa" },
+            { name: "Uganda", lat: 1.3733, lng: 32.2903, flag: "https://flagcdn.com/w320/ug.png", capital: "Kampala", population: "46M", continent: "Africa" },
+            { name: "Algeria", lat: 28.0339, lng: 1.6596, flag: "https://flagcdn.com/w320/dz.png", capital: "Algiers", population: "44M", continent: "Africa" },
+            { name: "Sudan", lat: 12.8628, lng: 30.2176, flag: "https://flagcdn.com/w320/sd.png", capital: "Khartoum", population: "44M", continent: "Africa" },
+            { name: "Morocco", lat: 31.7917, lng: -7.0926, flag: "https://flagcdn.com/w320/ma.png", capital: "Rabat", population: "37M", continent: "Africa" },
+            { name: "Angola", lat: -11.2027, lng: 17.8739, flag: "https://flagcdn.com/w320/ao.png", capital: "Luanda", population: "33M", continent: "Africa" },
+            { name: "Ghana", lat: 7.9465, lng: -1.0232, flag: "https://flagcdn.com/w320/gh.png", capital: "Accra", population: "31M", continent: "Africa" },
+            { name: "Mozambique", lat: -18.6657, lng: 35.5296, flag: "https://flagcdn.com/w320/mz.png", capital: "Maputo", population: "31M", continent: "Africa" },
+            { name: "Madagascar", lat: -18.7669, lng: 46.8691, flag: "https://flagcdn.com/w320/mg.png", capital: "Antananarivo", population: "28M", continent: "Africa" },
+            
+            // Oceania
+            { name: "Australia", lat: -25.2744, lng: 133.7751, flag: "https://flagcdn.com/w320/au.png", capital: "Canberra", population: "26M", continent: "Oceania" },
+            { name: "Papua New Guinea", lat: -6.3150, lng: 143.9555, flag: "https://flagcdn.com/w320/pg.png", capital: "Port Moresby", population: "9M", continent: "Oceania" },
+            { name: "New Zealand", lat: -40.9006, lng: 174.8860, flag: "https://flagcdn.com/w320/nz.png", capital: "Wellington", population: "5M", continent: "Oceania" },
+            { name: "Fiji", lat: -17.7134, lng: 178.0650, flag: "https://flagcdn.com/w320/fj.png", capital: "Suva", population: "900K", continent: "Oceania" },
+            { name: "Solomon Islands", lat: -9.6457, lng: 160.1562, flag: "https://flagcdn.com/w320/sb.png", capital: "Honiara", population: "687K", continent: "Oceania" }
+        ];
+
+        // Function to create flag markers
+        function createFlagMarkers() {
+            countries.forEach(country => {
+                // Create a custom flag icon
+                const flagIcon = L.divIcon({
+                    className: 'country-flag',
+                    html: `<img src="${country.flag}" alt="${country.name} flag" style="width: 40px; height: 25px; border-radius: 3px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">`,
+                    iconSize: [40, 25],
+                    iconAnchor: [20, 12]
+                });
+
+                // Add marker to map
+                const marker = L.marker([country.lat, country.lng], {
+                    icon: flagIcon,
+                    riseOnHover: true
+                }).addTo(map);
+
+                // Add popup with country info
+                marker.bindPopup(`
+                    <div style="text-align: center; min-width: 200px;">
+                        <img src="${country.flag}" alt="${country.name} flag" style="width: 100px; height: 60px; border-radius: 4px; margin-bottom: 10px; border: 2px solid #fff;">
+                        <h3 style="margin: 10px 0; color: #4a9eff;">${country.name}</h3>
+                        <div style="text-align: left; font-size: 14px; line-height: 1.5;">
+                            <div><strong>Capital:</strong> ${country.capital}</div>
+                            <div><strong>Population:</strong> ${country.population}</div>
+                            <div><strong>Continent:</strong> ${country.continent}</div>
+                        </div>
+                    </div>
+                `);
+
+                // Add click event to update info panel
+                marker.on('click', function() {
+                    updateCountryInfo(country);
+                });
+            });
+        }
+
+        // Update country information panel
+        function updateCountryInfo(country) {
+            document.getElementById('countryInfo').innerHTML = `
+                <div style="text-align: center;">
+                    <img src="${country.flag}" alt="${country.name} flag" style="width: 80px; height: 50px; border-radius: 4px; margin-bottom: 10px; border: 2px solid #fff;">
+                    <h3 style="margin: 5px 0; color: #4a9eff;">${country.name}</h3>
+                    <div style="font-size: 14px; line-height: 1.5; text-align: left;">
+                        <div><strong>Capital:</strong> ${country.capital}</div>
+                        <div><strong>Population:</strong> ${country.population}</div>
+                        <div><strong>Continent:</strong> ${country.continent}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Create flag markers
+        createFlagMarkers();
+
+        // Hide loading after markers are created
+        setTimeout(() => {
+            document.getElementById('loading').style.display = 'none';
+        }, 1500);
+
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+
+        themeToggle.addEventListener('click', function() {
+            if (body.classList.contains('dark-mode')) {
+                // Switch to light mode
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                
+                // Switch map tiles
+                map.removeLayer(darkLayer);
+                lightLayer.addTo(map);
+            } else {
+                // Switch to dark mode
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                
+                // Switch map tiles
+                map.removeLayer(lightLayer);
+                darkLayer.addTo(map);
+            }
+        });
+
+        // Add click event to show coordinates
+        map.on('click', function(e) {
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(`
+                    <div style="text-align: center;">
+                        <p>Lat: ${e.latlng.lat.toFixed(4)}</p>
+                        <p>Lng: ${e.latlng.lng.toFixed(4)}</p>
+                    </div>
+                `)
+                .openOn(map);
+        });
+
+        // Adjust flag sizes based on zoom level
+        map.on('zoomend', function() {
+            const zoom = map.getZoom();
+            const flagSize = Math.max(20, Math.min(60, 20 + (zoom - 2) * 5));
+            
+            // Update all flag markers
+            document.querySelectorAll('.country-flag img').forEach(img => {
+                img.style.width = `${flagSize}px`;
+                img.style.height = `${flagSize * 0.625}px`; // Maintain 5:8 flag ratio
+            });
+        });
+    </script>
+</body>
+</html>

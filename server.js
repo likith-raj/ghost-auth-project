@@ -5,11 +5,13 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
+const fetch = require('node-fetch');
+
 
 const app = express();
 
-// 🚨 CLOUD-OPTIMIZED FILE PATHS 🚨
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
+// 🚨 FIX FILE PATHS FOR CLOUD DEPLOYMENT 🚨
+const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const SESSIONS_FILE = path.join(DATA_DIR, 'sessions.json');
 const LOGIN_ATTEMPTS_FILE = path.join(DATA_DIR, 'login_attempts.json');
@@ -17,7 +19,6 @@ const LOGIN_ATTEMPTS_FILE = path.join(DATA_DIR, 'login_attempts.json');
 // Create data directory if it doesn't exist
 if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
-    console.log('📁 Created data directory:', DATA_DIR);
 }
 
 // Load data from files
@@ -60,6 +61,7 @@ function loadLoginAttempts() {
 // Save data to files
 function saveUsers() {
     fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    console.log('💾 Users saved to file:', users.length, 'total users');
 }
 
 function saveSessions() {
@@ -116,29 +118,16 @@ function validateUsername(username) {
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname)); // 🎯 FIXED: Serve from root directory
+app.use(express.static('.'));
 
-// Serve all HTML files directly
+// Serve index.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/dashboard', (req, res) => {
+// Serve dashboard.html
+app.get('/dashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
-});
-
-app.get('/monitor', (req, res) => {
-  res.sendFile(path.join(__dirname, 'monitor.html'));
-});
-
-// Health check endpoint for Render
-app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'Ghost Auth is running smoothly!',
-    timestamp: new Date().toISOString(),
-    users: users.length
-  });
 });
 
 // Test route
@@ -155,6 +144,7 @@ app.post('/api/register', async (req, res) => {
   try {
     const { username, email, password, confirmPassword } = req.body;
 
+    // Check if all fields are provided
     if (!username || !email || !password || !confirmPassword) {
       return res.status(400).json({ 
         success: false,
@@ -162,6 +152,7 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    // Check if passwords match
     if (password !== confirmPassword) {
       return res.status(400).json({ 
         success: false,
@@ -169,6 +160,7 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    // Validate email
     if (!validateEmail(email)) {
       return res.status(400).json({ 
         success: false,
@@ -176,6 +168,7 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    // Validate username
     if (!validateUsername(username)) {
       return res.status(400).json({ 
         success: false,
@@ -183,6 +176,7 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    // Validate password strength
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.valid) {
       return res.status(400).json({ 
@@ -191,6 +185,7 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    // Check if user exists
     const existingUser = users.find(u => u.email === email || u.username === username);
     if (existingUser) {
       const field = existingUser.email === email ? 'email' : 'username';
@@ -200,8 +195,10 @@ app.post('/api/register', async (req, res) => {
       });
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Create user
     const user = {
       id: Date.now().toString(),
       username,
@@ -213,33 +210,12 @@ app.post('/api/register', async (req, res) => {
     };
 
     users.push(user);
-    saveUsers();
-
-    const token = jwt.sign(
-      { userId: user.id, username: user.username },
-      'ghost-secret-key',
-      { expiresIn: '24h' }
-    );
-
-    const session = {
-      userId: user.id,
-      token,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-    };
-    sessions.push(session);
-    saveSessions();
+    saveUsers(); // 💾 SAVE TO FILE
 
     res.status(201).json({
       success: true,
-      message: 'Account created successfully! Redirecting to dashboard...',
-      token,
-      user: { 
-        id: user.id, 
-        username: user.username, 
-        email: user.email 
-      },
-      redirect: '/dashboard.html'
+      message: 'Account created successfully! Please login with your credentials.',
+      redirect: '/index.html'  // ✅ Goes back to login page
     });
 
   } catch (error) {
@@ -251,11 +227,12 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Enhanced Login route
+// Enhanced Login route with security features
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password, rememberMe } = req.body;
 
+    // Check if all fields are provided
     if (!username || !password) {
       return res.status(400).json({ 
         success: false,
@@ -263,6 +240,7 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
+    // Check for too many failed attempts (5 attempts max)
     if (loginAttempts[username] >= 5) {
       return res.status(429).json({ 
         success: false,
@@ -270,11 +248,13 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
+    // Find user
     const user = users.find(u => u.email === username || u.username === username);
     
     if (!user) {
+      // Increment failed attempts
       loginAttempts[username] = (loginAttempts[username] || 0) + 1;
-      saveLoginAttempts();
+      saveLoginAttempts(); // 💾 SAVE TO FILE
       
       return res.status(400).json({ 
         success: false,
@@ -282,6 +262,7 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
+    // Check if account is active
     if (!user.isActive) {
       return res.status(400).json({ 
         success: false,
@@ -289,11 +270,13 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
+    // Check password
     const isMatch = await bcrypt.compare(password, user.password);
     
     if (!isMatch) {
+      // Increment failed attempts
       loginAttempts[username] = (loginAttempts[username] || 0) + 1;
-      saveLoginAttempts();
+      saveLoginAttempts(); // 💾 SAVE TO FILE
       
       const attemptsLeft = 5 - loginAttempts[username];
       return res.status(400).json({ 
@@ -302,12 +285,15 @@ app.post('/api/login', async (req, res) => {
       });
     }
 
+    // Reset failed attempts on successful login
     delete loginAttempts[username];
-    saveLoginAttempts();
+    saveLoginAttempts(); // 💾 SAVE TO FILE
 
+    // Update last login
     user.lastLogin = new Date();
-    saveUsers();
+    saveUsers(); // 💾 SAVE TO FILE
 
+    // Generate token with different expiration for "remember me"
     const tokenExpiry = rememberMe ? '30d' : '24h';
     const token = jwt.sign(
       { userId: user.id, username: user.username },
@@ -315,6 +301,7 @@ app.post('/api/login', async (req, res) => {
       { expiresIn: tokenExpiry }
     );
 
+    // Create session
     const session = {
       userId: user.id,
       token,
@@ -322,7 +309,7 @@ app.post('/api/login', async (req, res) => {
       expiresAt: new Date(Date.now() + (rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000))
     };
     sessions.push(session);
-    saveSessions();
+    saveSessions(); // 💾 SAVE TO FILE
 
     res.json({
       success: true,
@@ -346,13 +333,13 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Other routes remain the same...
+// Logout route
 app.post('/api/logout', (req, res) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   
   if (token) {
     sessions = sessions.filter(s => s.token !== token);
-    saveSessions();
+    saveSessions(); // 💾 SAVE TO FILE
   }
   
   res.json({ 
@@ -361,6 +348,7 @@ app.post('/api/logout', (req, res) => {
   });
 });
 
+// Check auth status
 app.get('/api/check-auth', (req, res) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   
@@ -389,6 +377,7 @@ app.get('/api/check-auth', (req, res) => {
   }
 });
 
+// Get user profile
 app.get('/api/profile', (req, res) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   
@@ -418,6 +407,7 @@ app.get('/api/profile', (req, res) => {
   }
 });
 
+// Get all users (for testing)
 app.get('/api/users', (req, res) => {
   res.json({ 
     totalUsers: users.length,
@@ -430,15 +420,17 @@ app.get('/api/users', (req, res) => {
   });
 });
 
+// Reset failed attempts (for testing)
 app.post('/api/reset-attempts', (req, res) => {
   const { username } = req.body;
   if (username) {
     delete loginAttempts[username];
-    saveLoginAttempts();
+    saveLoginAttempts(); // 💾 SAVE TO FILE
   }
   res.json({ message: 'Login attempts reset' });
 });
 
+// View stored data files
 app.get('/api/debug/files', (req, res) => {
   res.json({
     usersFile: fs.existsSync(USERS_FILE) ? 'Exists' : 'Missing',
@@ -454,15 +446,17 @@ app.post('/launch-monitor', (req, res) => {
     try {
         console.log('🚀 Launching Python monitor...');
         
+        // Path to your Python file
         const pythonScriptPath = path.join(__dirname, 'real_monitor.py');
         
+        // Launch the Python script
         const pythonProcess = spawn('python', [pythonScriptPath], {
             detached: true,
             stdio: 'ignore',
             cwd: __dirname
         });
         
-        pythonProcess.unref();
+        pythonProcess.unref(); // Allow Python app to run independently
         
         console.log('✅ Python monitor launched with PID:', pythonProcess.pid);
         
@@ -480,19 +474,27 @@ app.post('/launch-monitor', (req, res) => {
         });
     }
 });
+// --- WHO CAUSE OF DEATH PROXY ENDPOINT ---
+app.get('/who/:isoAlpha3', async (req, res) => {
+  const iso = req.params.isoAlpha3.toUpperCase();
+  const apiUrl = `https://ghoapi.azureedge.net/api/MORT_CAUSE_GRP?filter=CountryCode eq '${iso}' and Year eq 2021 and Sex eq 'Both sexes'`;
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'WHO fetch failed.' });
+  }
+});
 
-// 🚀 START SERVER - OPTIMIZED FOR RENDER 🚀
-// 🚀 WINDOWS-STYLE STARTUP
-console.log("Microsoft Windows [Version 10.0.26200.7019]");
-console.log("(c) Microsoft Corporation. All rights reserved.\n");
-console.log(`D:\\ghost-auth>node server.js`);
-console.log(`Starting Ghost Auth Server...`);
-console.log(`Port: ${process.env.PORT || 5000}`);
-console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`Users: ${users.length}`);
-console.log(`Server ready for connections...\n`);
 
+// 🚨 KEEP THIS AT THE VERY END 🚨
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  // Server is running silently
+  console.log(`🚀 Advanced Ghost Auth running on port ${PORT}`);
+  console.log(`💾 Data will be saved in ./data/ folder`);
+  console.log(`📊 Currently ${users.length} users in database`);
+  console.log(`✅ Features: Permanent storage, Password validation, Security limits`);
+  console.log(`🎯 Dashboard available at /dashboard.html`);
+  console.log(`🐍 Python Monitor: POST /launch-monitor`);
 });

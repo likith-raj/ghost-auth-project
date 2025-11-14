@@ -1,0 +1,477 @@
+// GNEWS API CONFIG - USE YOUR KEY
+const GNEWS_API_KEY = 'e311886c172d3e8d5fd56e4cb73441c6';
+
+// Initialize map
+const map = L.map('map', {
+    center: [20, 0],
+    zoom: 2,
+    zoomControl: true,
+    scrollWheelZoom: true,
+    dragging: true,
+    worldCopyJump: false
+});
+
+// Add dark map tiles
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap, © CartoDB',
+    subdomains: 'abcd',
+    noWrap: false,
+}).addTo(map);
+
+// Country database (194 countries)
+const countries = [
+    { name: "Afghanistan", lat: 33.93911, lng: 67.709953, code: "af", flag: "https://flagcdn.com/w40/af.png" },
+    { name: "Albania", lat: 41.1533, lng: 20.1683, code: "al", flag: "https://flagcdn.com/w40/al.png" },
+    { name: "Algeria", lat: 28.0339, lng: 1.6596, code: "dz", flag: "https://flagcdn.com/w40/dz.png" },
+    { name: "Andorra", lat: 42.5063, lng: 1.5218, code: "ad", flag: "https://flagcdn.com/w40/ad.png" },
+    { name: "Angola", lat: -11.2027, lng: 17.8739, code: "ao", flag: "https://flagcdn.com/w40/ao.png" },
+    { name: "Antigua and Barbuda", lat: 17.0608, lng: -61.7964, code: "ag", flag: "https://flagcdn.com/w40/ag.png" },
+    { name: "Argentina", lat: -38.4161, lng: -63.6167, code: "ar", flag: "https://flagcdn.com/w40/ar.png" },
+    { name: "Armenia", lat: 40.0691, lng: 45.0382, code: "am", flag: "https://flagcdn.com/w40/am.png" },
+    { name: "Australia", lat: -25.2744, lng: 133.7751, code: "au", flag: "https://flagcdn.com/w40/au.png" },
+    { name: "Austria", lat: 47.5162, lng: 14.5501, code: "at", flag: "https://flagcdn.com/w40/at.png" },
+    { name: "Azerbaijan", lat: 40.1431, lng: 47.5769, code: "az", flag: "https://flagcdn.com/w40/az.png" },
+    { name: "Bahamas", lat: 25.0343, lng: -77.3963, code: "bs", flag: "https://flagcdn.com/w40/bs.png" },
+    { name: "Bahrain", lat: 26.0667, lng: 50.5577, code: "bh", flag: "https://flagcdn.com/w40/bh.png" },
+    { name: "Bangladesh", lat: 23.685, lng: 90.3563, code: "bd", flag: "https://flagcdn.com/w40/bd.png" },
+    { name: "Barbados", lat: 13.1939, lng: -59.5432, code: "bb", flag: "https://flagcdn.com/w40/bb.png" },
+    { name: "Belarus", lat: 53.7098, lng: 27.9534, code: "by", flag: "https://flagcdn.com/w40/by.png" },
+    { name: "Belgium", lat: 50.5039, lng: 4.4699, code: "be", flag: "https://flagcdn.com/w40/be.png" },
+    { name: "Belize", lat: 17.1899, lng: -88.4976, code: "bz", flag: "https://flagcdn.com/w40/bz.png" },
+    { name: "Benin", lat: 9.3077, lng: 2.3158, code: "bj", flag: "https://flagcdn.com/w40/bj.png" },
+    { name: "Bhutan", lat: 27.5142, lng: 90.4336, code: "bt", flag: "https://flagcdn.com/w40/bt.png" },
+    { name: "Bolivia", lat: -16.2902, lng: -63.5887, code: "bo", flag: "https://flagcdn.com/w40/bo.png" },
+    { name: "Bosnia and Herzegovina", lat: 43.9159, lng: 17.6791, code: "ba", flag: "https://flagcdn.com/w40/ba.png" },
+    { name: "Botswana", lat: -22.3285, lng: 24.6849, code: "bw", flag: "https://flagcdn.com/w40/bw.png" },
+    { name: "Brazil", lat: -14.235, lng: -51.9253, code: "br", flag: "https://flagcdn.com/w40/br.png" },
+    { name: "Brunei", lat: 4.5353, lng: 114.7277, code: "bn", flag: "https://flagcdn.com/w40/bn.png" },
+    { name: "Bulgaria", lat: 42.7339, lng: 25.4858, code: "bg", flag: "https://flagcdn.com/w40/bg.png" },
+    { name: "Burkina Faso", lat: 12.2383, lng: -1.5616, code: "bf", flag: "https://flagcdn.com/w40/bf.png" },
+    { name: "Burundi", lat: -3.3731, lng: 29.9189, code: "bi", flag: "https://flagcdn.com/w40/bi.png" },
+    { name: "Cabo Verde", lat: 16.5388, lng: -23.0418, code: "cv", flag: "https://flagcdn.com/w40/cv.png" },
+    { name: "Cambodia", lat: 12.5657, lng: 104.991, code: "kh", flag: "https://flagcdn.com/w40/kh.png" },
+    { name: "Cameroon", lat: 7.3697, lng: 12.3547, code: "cm", flag: "https://flagcdn.com/w40/cm.png" },
+    { name: "Canada", lat: 56.1304, lng: -106.3468, code: "ca", flag: "https://flagcdn.com/w40/ca.png" },
+    { name: "Central African Republic", lat: 6.6111, lng: 20.9394, code: "cf", flag: "https://flagcdn.com/w40/cf.png" },
+    { name: "Chad", lat: 15.4542, lng: 18.7322, code: "td", flag: "https://flagcdn.com/w40/td.png" },
+    { name: "Chile", lat: -35.6751, lng: -71.543, code: "cl", flag: "https://flagcdn.com/w40/cl.png" },
+    { name: "China", lat: 35.8617, lng: 104.1954, code: "cn", flag: "https://flagcdn.com/w40/cn.png" },
+    { name: "Colombia", lat: 4.5709, lng: -74.2973, code: "co", flag: "https://flagcdn.com/w40/co.png" },
+    { name: "Comoros", lat: -11.6455, lng: 43.3333, code: "km", flag: "https://flagcdn.com/w40/km.png" },
+    { name: "Congo", lat: -0.228, lng: 15.8277, code: "cg", flag: "https://flagcdn.com/w40/cg.png" },
+    { name: "Costa Rica", lat: 9.7489, lng: -83.7534, code: "cr", flag: "https://flagcdn.com/w40/cr.png" },
+    { name: "Croatia", lat: 45.1, lng: 15.2, code: "hr", flag: "https://flagcdn.com/w40/hr.png" },
+    { name: "Cuba", lat: 21.5218, lng: -77.7812, code: "cu", flag: "https://flagcdn.com/w40/cu.png" },
+    { name: "Cyprus", lat: 35.1264, lng: 33.4299, code: "cy", flag: "https://flagcdn.com/w40/cy.png" },
+    { name: "Czech Republic", lat: 49.8175, lng: 15.472, code: "cz", flag: "https://flagcdn.com/w40/cz.png" },
+    { name: "Denmark", lat: 56.2639, lng: 9.5018, code: "dk", flag: "https://flagcdn.com/w40/dk.png" },
+    { name: "Djibouti", lat: 11.8251, lng: 42.5903, code: "dj", flag: "https://flagcdn.com/w40/dj.png" },
+    { name: "Dominica", lat: 15.415, lng: -61.371, code: "dm", flag: "https://flagcdn.com/w40/dm.png" },
+    { name: "Dominican Republic", lat: 18.7357, lng: -70.1627, code: "do", flag: "https://flagcdn.com/w40/do.png" },
+    { name: "Ecuador", lat: -1.8312, lng: -78.1834, code: "ec", flag: "https://flagcdn.com/w40/ec.png" },
+    { name: "Egypt", lat: 26.8206, lng: 30.8025, code: "eg", flag: "https://flagcdn.com/w40/eg.png" },
+    { name: "El Salvador", lat: 13.7942, lng: -88.8965, code: "sv", flag: "https://flagcdn.com/w40/sv.png" },
+    { name: "Equatorial Guinea", lat: 1.6508, lng: 10.2679, code: "gq", flag: "https://flagcdn.com/w40/gq.png" },
+    { name: "Eritrea", lat: 15.1794, lng: 39.7823, code: "er", flag: "https://flagcdn.com/w40/er.png" },
+    { name: "Estonia", lat: 58.5953, lng: 25.0136, code: "ee", flag: "https://flagcdn.com/w40/ee.png" },
+    { name: "Eswatini", lat: -26.5225, lng: 31.4659, code: "sz", flag: "https://flagcdn.com/w40/sz.png" },
+    { name: "Ethiopia", lat: 9.145, lng: 40.4897, code: "et", flag: "https://flagcdn.com/w40/et.png" },
+    { name: "Fiji", lat: -17.7134, lng: 178.065, code: "fj", flag: "https://flagcdn.com/w40/fj.png" },
+    { name: "Finland", lat: 61.9241, lng: 25.7482, code: "fi", flag: "https://flagcdn.com/w40/fi.png" },
+    { name: "France", lat: 46.2276, lng: 2.2137, code: "fr", flag: "https://flagcdn.com/w40/fr.png" },
+    { name: "Gabon", lat: -0.8037, lng: 11.6094, code: "ga", flag: "https://flagcdn.com/w40/ga.png" },
+    { name: "Gambia", lat: 13.4432, lng: -15.3101, code: "gm", flag: "https://flagcdn.com/w40/gm.png" },
+    { name: "Georgia", lat: 42.3154, lng: 43.3569, code: "ge", flag: "https://flagcdn.com/w40/ge.png" },
+    { name: "Germany", lat: 51.1657, lng: 10.4515, code: "de", flag: "https://flagcdn.com/w40/de.png" },
+    { name: "Ghana", lat: 7.9465, lng: -1.0232, code: "gh", flag: "https://flagcdn.com/w40/gh.png" },
+    { name: "Greece", lat: 39.0742, lng: 21.8243, code: "gr", flag: "https://flagcdn.com/w40/gr.png" },
+    { name: "Grenada", lat: 12.1165, lng: -61.679, code: "gd", flag: "https://flagcdn.com/w40/gd.png" },
+    { name: "Guatemala", lat: 15.7835, lng: -90.2308, code: "gt", flag: "https://flagcdn.com/w40/gt.png" },
+    { name: "Guinea", lat: 9.9456, lng: -9.6966, code: "gn", flag: "https://flagcdn.com/w40/gn.png" },
+    { name: "Guinea-Bissau", lat: 11.8037, lng: -15.1804, code: "gw", flag: "https://flagcdn.com/w40/gw.png" },
+    { name: "Guyana", lat: 4.8604, lng: -58.9302, code: "gy", flag: "https://flagcdn.com/w40/gy.png" },
+    { name: "Haiti", lat: 18.9712, lng: -72.2852, code: "ht", flag: "https://flagcdn.com/w40/ht.png" },
+    { name: "Honduras", lat: 15.2, lng: -86.2419, code: "hn", flag: "https://flagcdn.com/w40/hn.png" },
+    { name: "Hungary", lat: 47.1625, lng: 19.5033, code: "hu", flag: "https://flagcdn.com/w40/hu.png" },
+    { name: "Iceland", lat: 64.9631, lng: -19.0208, code: "is", flag: "https://flagcdn.com/w40/is.png" },
+    { name: "India", lat: 20.5937, lng: 78.9629, code: "in", flag: "https://flagcdn.com/w40/in.png" },
+    { name: "Indonesia", lat: -0.7893, lng: 113.9213, code: "id", flag: "https://flagcdn.com/w40/id.png" },
+    { name: "Iran", lat: 32.4279, lng: 53.688, code: "ir", flag: "https://flagcdn.com/w40/ir.png" },
+    { name: "Iraq", lat: 33.2232, lng: 43.6793, code: "iq", flag: "https://flagcdn.com/w40/iq.png" },
+    { name: "Ireland", lat: 53.1424, lng: -7.6921, code: "ie", flag: "https://flagcdn.com/w40/ie.png" },
+    { name: "Israel", lat: 31.0461, lng: 34.8516, code: "il", flag: "https://flagcdn.com/w40/il.png" },
+    { name: "Italy", lat: 41.8719, lng: 12.5674, code: "it", flag: "https://flagcdn.com/w40/it.png" },
+    { name: "Jamaica", lat: 18.1096, lng: -77.2975, code: "jm", flag: "https://flagcdn.com/w40/jm.png" },
+    { name: "Japan", lat: 36.2048, lng: 138.2529, code: "jp", flag: "https://flagcdn.com/w40/jp.png" },
+    { name: "Jordan", lat: 30.5852, lng: 36.2384, code: "jo", flag: "https://flagcdn.com/w40/jo.png" },
+    { name: "Kazakhstan", lat: 48.0196, lng: 66.9237, code: "kz", flag: "https://flagcdn.com/w40/kz.png" },
+    { name: "Kenya", lat: -0.0236, lng: 37.9062, code: "ke", flag: "https://flagcdn.com/w40/ke.png" },
+    { name: "Kiribati", lat: -3.3704, lng: -168.734, code: "ki", flag: "https://flagcdn.com/w40/ki.png" },
+    { name: "Korea North", lat: 40.3399, lng: 127.5101, code: "kp", flag: "https://flagcdn.com/w40/kp.png" },
+    { name: "Korea South", lat: 35.9078, lng: 127.7669, code: "kr", flag: "https://flagcdn.com/w40/kr.png" },
+    { name: "Kosovo", lat: 42.6026, lng: 20.903, code: "xk", flag: "https://flagcdn.com/w40/xk.png" },
+    { name: "Kuwait", lat: 29.3117, lng: 47.4818, code: "kw", flag: "https://flagcdn.com/w40/kw.png" },
+    { name: "Kyrgyzstan", lat: 41.2044, lng: 74.7661, code: "kg", flag: "https://flagcdn.com/w40/kg.png" },
+    { name: "Laos", lat: 19.8563, lng: 102.4955, code: "la", flag: "https://flagcdn.com/w40/la.png" },
+    { name: "Latvia", lat: 56.8796, lng: 24.6032, code: "lv", flag: "https://flagcdn.com/w40/lv.png" },
+    { name: "Lebanon", lat: 33.8547, lng: 35.8623, code: "lb", flag: "https://flagcdn.com/w40/lb.png" },
+    { name: "Lesotho", lat: -29.6099, lng: 28.2336, code: "ls", flag: "https://flagcdn.com/w40/ls.png" },
+    { name: "Liberia", lat: 6.4281, lng: -9.4295, code: "lr", flag: "https://flagcdn.com/w40/lr.png" },
+    { name: "Libya", lat: 26.3351, lng: 17.2283, code: "ly", flag: "https://flagcdn.com/w40/ly.png" },
+    { name: "Liechtenstein", lat: 47.166, lng: 9.5554, code: "li", flag: "https://flagcdn.com/w40/li.png" },
+    { name: "Lithuania", lat: 55.1694, lng: 23.8813, code: "lt", flag: "https://flagcdn.com/w40/lt.png" },
+    { name: "Luxembourg", lat: 49.8153, lng: 6.1296, code: "lu", flag: "https://flagcdn.com/w40/lu.png" },
+    { name: "Madagascar", lat: -18.7669, lng: 46.8691, code: "mg", flag: "https://flagcdn.com/w40/mg.png" },
+    { name: "Malawi", lat: -13.2543, lng: 34.3015, code: "mw", flag: "https://flagcdn.com/w40/mw.png" },
+    { name: "Malaysia", lat: 4.2105, lng: 101.9758, code: "my", flag: "https://flagcdn.com/w40/my.png" },
+    { name: "Maldives", lat: 3.2028, lng: 73.2207, code: "mv", flag: "https://flagcdn.com/w40/mv.png" },
+    { name: "Mali", lat: 17.5707, lng: -3.9962, code: "ml", flag: "https://flagcdn.com/w40/ml.png" },
+    { name: "Malta", lat: 35.9375, lng: 14.3754, code: "mt", flag: "https://flagcdn.com/w40/mt.png" },
+    { name: "Marshall Islands", lat: 7.1315, lng: 171.1845, code: "mh", flag: "https://flagcdn.com/w40/mh.png" },
+    { name: "Mauritania", lat: 21.0079, lng: -10.9408, code: "mr", flag: "https://flagcdn.com/w40/mr.png" },
+    { name: "Mauritius", lat: -20.3484, lng: 57.5522, code: "mu", flag: "https://flagcdn.com/w40/mu.png" },
+    { name: "Mexico", lat: 23.6345, lng: -102.5528, code: "mx", flag: "https://flagcdn.com/w40/mx.png" },
+    { name: "Micronesia", lat: 7.4256, lng: 150.5508, code: "fm", flag: "https://flagcdn.com/w40/fm.png" },
+    { name: "Moldova", lat: 47.4116, lng: 28.3699, code: "md", flag: "https://flagcdn.com/w40/md.png" },
+    { name: "Monaco", lat: 43.7384, lng: 7.4246, code: "mc", flag: "https://flagcdn.com/w40/mc.png" },
+    { name: "Mongolia", lat: 46.8625, lng: 103.8467, code: "mn", flag: "https://flagcdn.com/w40/mn.png" },
+    { name: "Montenegro", lat: 42.7087, lng: 19.3744, code: "me", flag: "https://flagcdn.com/w40/me.png" },
+    { name: "Morocco", lat: 31.7917, lng: -7.0926, code: "ma", flag: "https://flagcdn.com/w40/ma.png" },
+    { name: "Mozambique", lat: -18.6657, lng: 35.5296, code: "mz", flag: "https://flagcdn.com/w40/mz.png" },
+    { name: "Myanmar", lat: 21.9162, lng: 95.956, code: "mm", flag: "https://flagcdn.com/w40/mm.png" },
+    { name: "Namibia", lat: -22.9576, lng: 18.4904, code: "na", flag: "https://flagcdn.com/w40/na.png" },
+    { name: "Nauru", lat: -0.5228, lng: 166.9315, code: "nr", flag: "https://flagcdn.com/w40/nr.png" },
+    { name: "Nepal", lat: 28.3949, lng: 84.124, code: "np", flag: "https://flagcdn.com/w40/np.png" },
+    { name: "Netherlands", lat: 52.1326, lng: 5.2913, code: "nl", flag: "https://flagcdn.com/w40/nl.png" },
+    { name: "New Zealand", lat: -40.9006, lng: 174.886, code: "nz", flag: "https://flagcdn.com/w40/nz.png" },
+    { name: "Nicaragua", lat: 12.8654, lng: -85.2072, code: "ni", flag: "https://flagcdn.com/w40/ni.png" },
+    { name: "Niger", lat: 17.6078, lng: 8.0817, code: "ne", flag: "https://flagcdn.com/w40/ne.png" },
+    { name: "Nigeria", lat: 9.082, lng: 8.6753, code: "ng", flag: "https://flagcdn.com/w40/ng.png" },
+    { name: "North Macedonia", lat: 41.6086, lng: 21.7453, code: "mk", flag: "https://flagcdn.com/w40/mk.png" },
+    { name: "Norway", lat: 60.472, lng: 8.4689, code: "no", flag: "https://flagcdn.com/w40/no.png" },
+    { name: "Oman", lat: 21.5126, lng: 55.9233, code: "om", flag: "https://flagcdn.com/w40/om.png" },
+    { name: "Pakistan", lat: 30.3753, lng: 69.3451, code: "pk", flag: "https://flagcdn.com/w40/pk.png" },
+    { name: "Palau", lat: 7.515, lng: 134.5825, code: "pw", flag: "https://flagcdn.com/w40/pw.png" },
+    { name: "Palestine", lat: 31.9522, lng: 35.2332, code: "ps", flag: "https://flagcdn.com/w40/ps.png" },
+    { name: "Panama", lat: 8.5379, lng: -80.7821, code: "pa", flag: "https://flagcdn.com/w40/pa.png" },
+    { name: "Papua New Guinea", lat: -6.315, lng: 143.9555, code: "pg", flag: "https://flagcdn.com/w40/pg.png" },
+    { name: "Paraguay", lat: -23.4425, lng: -58.4438, code: "py", flag: "https://flagcdn.com/w40/py.png" },
+    { name: "Peru", lat: -9.19, lng: -75.0152, code: "pe", flag: "https://flagcdn.com/w40/pe.png" },
+    { name: "Philippines", lat: 12.8797, lng: 121.774, code: "ph", flag: "https://flagcdn.com/w40/ph.png" },
+    { name: "Poland", lat: 51.9194, lng: 19.1451, code: "pl", flag: "https://flagcdn.com/w40/pl.png" },
+    { name: "Portugal", lat: 39.3999, lng: -8.2245, code: "pt", flag: "https://flagcdn.com/w40/pt.png" },
+    { name: "Qatar", lat: 25.3548, lng: 51.1839, code: "qa", flag: "https://flagcdn.com/w40/qa.png" },
+    { name: "Romania", lat: 45.9432, lng: 24.9668, code: "ro", flag: "https://flagcdn.com/w40/ro.png" },
+    { name: "Russia", lat: 61.524, lng: 105.3188, code: "ru", flag: "https://flagcdn.com/w40/ru.png" },
+    { name: "Rwanda", lat: -1.9403, lng: 29.8739, code: "rw", flag: "https://flagcdn.com/w40/rw.png" },
+    { name: "Saint Kitts and Nevis", lat: 17.3578, lng: -62.783, code: "kn", flag: "https://flagcdn.com/w40/kn.png" },
+    { name: "Saint Lucia", lat: 13.9094, lng: -60.9789, code: "lc", flag: "https://flagcdn.com/w40/lc.png" },
+    { name: "Saint Vincent", lat: 12.9843, lng: -61.2872, code: "vc", flag: "https://flagcdn.com/w40/vc.png" },
+    { name: "Samoa", lat: -13.759, lng: -172.1046, code: "ws", flag: "https://flagcdn.com/w40/ws.png" },
+    { name: "San Marino", lat: 43.9424, lng: 12.4578, code: "sm", flag: "https://flagcdn.com/w40/sm.png" },
+    { name: "Sao Tome and Principe", lat: 0.1864, lng: 6.6131, code: "st", flag: "https://flagcdn.com/w40/st.png" },
+    { name: "Saudi Arabia", lat: 23.8859, lng: 45.0792, code: "sa", flag: "https://flagcdn.com/w40/sa.png" },
+    { name: "Senegal", lat: 14.4974, lng: -14.4524, code: "sn", flag: "https://flagcdn.com/w40/sn.png" },
+    { name: "Serbia", lat: 44.0165, lng: 21.0059, code: "rs", flag: "https://flagcdn.com/w40/rs.png" },
+    { name: "Seychelles", lat: -4.6796, lng: 55.492, code: "sc", flag: "https://flagcdn.com/w40/sc.png" },
+    { name: "Sierra Leone", lat: 8.4606, lng: -11.7799, code: "sl", flag: "https://flagcdn.com/w40/sl.png" },
+    { name: "Singapore", lat: 1.3521, lng: 103.8198, code: "sg", flag: "https://flagcdn.com/w40/sg.png" },
+    { name: "Slovakia", lat: 48.669, lng: 19.699, code: "sk", flag: "https://flagcdn.com/w40/sk.png" },
+    { name: "Slovenia", lat: 46.1512, lng: 14.9955, code: "si", flag: "https://flagcdn.com/w40/si.png" },
+    { name: "Solomon Islands", lat: -9.6457, lng: 160.1562, code: "sb", flag: "https://flagcdn.com/w40/sb.png" },
+    { name: "Somalia", lat: 5.1521, lng: 46.1996, code: "so", flag: "https://flagcdn.com/w40/so.png" },
+    { name: "South Africa", lat: -30.5595, lng: 22.9375, code: "za", flag: "https://flagcdn.com/w40/za.png" },
+    { name: "South Sudan", lat: 6.877, lng: 31.307, code: "ss", flag: "https://flagcdn.com/w40/ss.png" },
+    { name: "Spain", lat: 40.4637, lng: -3.7492, code: "es", flag: "https://flagcdn.com/w40/es.png" },
+    { name: "Sri Lanka", lat: 7.8731, lng: 80.7718, code: "lk", flag: "https://flagcdn.com/w40/lk.png" },
+    { name: "Sudan", lat: 12.8628, lng: 30.2176, code: "sd", flag: "https://flagcdn.com/w40/sd.png" },
+    { name: "Suriname", lat: 3.9193, lng: -56.0278, code: "sr", flag: "https://flagcdn.com/w40/sr.png" },
+    { name: "Sweden", lat: 60.1282, lng: 18.6435, code: "se", flag: "https://flagcdn.com/w40/se.png" },
+    { name: "Switzerland", lat: 46.8182, lng: 8.2275, code: "ch", flag: "https://flagcdn.com/w40/ch.png" },
+    { name: "Syria", lat: 34.8021, lng: 38.9968, code: "sy", flag: "https://flagcdn.com/w40/sy.png" },
+    { name: "Taiwan", lat: 23.6978, lng: 120.9605, code: "tw", flag: "https://flagcdn.com/w40/tw.png" },
+    { name: "Tajikistan", lat: 38.861, lng: 71.2761, code: "tj", flag: "https://flagcdn.com/w40/tj.png" },
+    { name: "Tanzania", lat: -6.369, lng: 34.8888, code: "tz", flag: "https://flagcdn.com/w40/tz.png" },
+    { name: "Thailand", lat: 15.87, lng: 100.9925, code: "th", flag: "https://flagcdn.com/w40/th.png" },
+    { name: "Timor-Leste", lat: -8.8742, lng: 125.7275, code: "tl", flag: "https://flagcdn.com/w40/tl.png" },
+    { name: "Togo", lat: 8.6195, lng: 0.8248, code: "tg", flag: "https://flagcdn.com/w40/tg.png" },
+    { name: "Tonga", lat: -21.179, lng: -175.1982, code: "to", flag: "https://flagcdn.com/w40/to.png" },
+    { name: "Trinidad and Tobago", lat: 10.6918, lng: -61.2225, code: "tt", flag: "https://flagcdn.com/w40/tt.png" },
+    { name: "Tunisia", lat: 33.8869, lng: 9.5375, code: "tn", flag: "https://flagcdn.com/w40/tn.png" },
+    { name: "Turkey", lat: 38.9637, lng: 35.2433, code: "tr", flag: "https://flagcdn.com/w40/tr.png" },
+    { name: "Turkmenistan", lat: 38.9697, lng: 59.5563, code: "tm", flag: "https://flagcdn.com/w40/tm.png" },
+    { name: "Tuvalu", lat: -7.1095, lng: 177.6493, code: "tv", flag: "https://flagcdn.com/w40/tv.png" },
+    { name: "Uganda", lat: 1.3733, lng: 32.2903, code: "ug", flag: "https://flagcdn.com/w40/ug.png" },
+    { name: "Ukraine", lat: 48.3794, lng: 31.1656, code: "ua", flag: "https://flagcdn.com/w40/ua.png" },
+    { name: "United Arab Emirates", lat: 23.4241, lng: 53.8478, code: "ae", flag: "https://flagcdn.com/w40/ae.png" },
+    { name: "United Kingdom", lat: 55.3781, lng: -3.436, code: "gb", flag: "https://flagcdn.com/w40/gb.png" },
+    { name: "United States", lat: 39.8283, lng: -98.5795, code: "us", flag: "https://flagcdn.com/w40/us.png" },
+    { name: "Uruguay", lat: -32.5228, lng: -55.7658, code: "uy", flag: "https://flagcdn.com/w40/uy.png" },
+    { name: "Uzbekistan", lat: 41.3775, lng: 64.5853, code: "uz", flag: "https://flagcdn.com/w40/uz.png" },
+    { name: "Vanuatu", lat: -15.3767, lng: 166.9592, code: "vu", flag: "https://flagcdn.com/w40/vu.png" },
+    { name: "Vatican City", lat: 41.9029, lng: 12.4534, code: "va", flag: "https://flagcdn.com/w40/va.png" },
+    { name: "Venezuela", lat: 6.4238, lng: -66.5897, code: "ve", flag: "https://flagcdn.com/w40/ve.png" },
+    { name: "Vietnam", lat: 14.0583, lng: 108.2772, code: "vn", flag: "https://flagcdn.com/w40/vn.png" },
+    { name: "Yemen", lat: 15.5527, lng: 48.5164, code: "ye", flag: "https://flagcdn.com/w40/ye.png" },
+    { name: "Zambia", lat: -13.1339, lng: 27.8493, code: "zm", flag: "https://flagcdn.com/w40/zm.png" },
+    { name: "Zimbabwe", lat: -19.0154, lng: 29.1549, code: "zw", flag: "https://flagcdn.com/w40/zw.png" }
+];
+
+// Store markers for reference
+const markerMap = {};
+
+// Get real news from GNews API
+async function getCountryNews(countryCode) {
+    try {
+        const response = await fetch(
+            `https://gnews.io/api/v4/top-headlines?country=${countryCode}&lang=en&max=5&apikey=${GNEWS_API_KEY}`
+        );
+        
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.articles && data.articles.length > 0) {
+            return data.articles.slice(0, 5); // Return top 5 articles
+        } else {
+            return []; // No articles found
+        }
+    } catch (error) {
+        console.error('Error fetching news:', error);
+        return null; // Use null to distinguish from empty results
+    }
+}
+function initMap() {
+    const isMobile = window.innerWidth <= 768;
+    
+    const mapOptions = {
+        zoom: isMobile ? 10 : 12,
+        gestureHandling: 'greedy',
+        zoomControl: true,
+        mapTypeControl: !isMobile,
+        scaleControl: true,
+        streetViewControl: !isMobile,
+        rotateControl: !isMobile,
+        fullscreenControl: true
+    };
+    
+    // Your existing map code...
+}
+// Create popup with real news
+function createNewsPopup(country, articles) {
+    let newsHTML = '';
+    
+    if (articles === null) {
+        // API error
+        newsHTML = `
+            <div class="error">
+                <i class="fas fa-exclamation-triangle"></i>
+                Failed to load news. Please try again later.
+            </div>
+        `;
+    } else if (articles.length > 0) {
+        // Add categories
+        newsHTML += `
+            <div class="news-categories">
+                <div class="category-tag">Top Stories</div>
+                <div class="category-tag">${country.name}</div>
+                <div class="category-tag">Latest</div>
+            </div>
+        `;
+        
+        articles.forEach(article => {
+            // Extract time ago
+            const timeAgo = article.publishedAt ? getTimeAgo(new Date(article.publishedAt)) : 'Recently';
+            
+            newsHTML += `
+                <div class="news-item fade-in">
+                    <a href="${article.url}" target="_blank" class="news-title">
+                        ${article.title || 'No title available'}
+                    </a>
+                    <div class="news-desc">
+                        ${article.description || 'No description available'}
+                    </div>
+                    <div class="news-source">
+                        <span>${article.source?.name || 'Unknown'}</span>
+                        <span>${timeAgo}</span>
+                    </div>
+                </div>
+            `;
+        });
+        
+        // Add stats
+        newsHTML += `
+            <div class="news-stats">
+                <span>${articles.length} stories loaded</span>
+                <span>Last updated: ${new Date().toLocaleTimeString()}</span>
+            </div>
+        `;
+    } else {
+        newsHTML = `<div class="loading">No recent news found for ${country.name}. Try Google News below.</div>`;
+    }
+    
+    return `
+        <div class="news-popup">
+            <div class="news-header">
+                <img src="${country.flag}" alt="${country.name}" class="popup-flag" onerror="this.style.display='none'">
+                <div class="popup-country">${country.name} Headlines</div>
+            </div>
+            <div class="news-content">
+                ${newsHTML}
+            </div>
+            <button class="google-news-btn" onclick="window.open('https://news.google.com/topstories?hl=en-${country.code}&gl=${country.code}&ceid=${country.code}:en', '_blank')">
+                <i class="fab fa-google"></i> View More on Google News
+            </button>
+        </div>
+    `;
+}
+
+// Helper function to get time ago
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " years ago";
+    
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " months ago";
+    
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " days ago";
+    
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " hours ago";
+    
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " minutes ago";
+    
+    return "Just now";
+}
+
+// Populate sidebar with countries
+const countryList = document.getElementById('countryList');
+
+function populateCountryList(filter = '') {
+    countryList.innerHTML = '';
+    const filteredCountries = countries.filter(country => 
+        country.name.toLowerCase().includes(filter.toLowerCase())
+    );
+    
+    filteredCountries.forEach(country => {
+        const li = document.createElement('li');
+        li.className = 'country-item fade-in';
+        li.innerHTML = `
+            <img src="${country.flag}" alt="${country.name}" class="country-flag" onerror="this.style.display='none'">
+            <span class="country-name">${country.name}</span>
+        `;
+        
+        li.addEventListener('click', async () => {
+            // Remove active class from all items
+            document.querySelectorAll('.country-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            // Add active class to clicked item
+            li.classList.add('active');
+            
+            // Show loading in popup
+            if (markerMap[country.name]) {
+                markerMap[country.name].getPopup().setContent(`
+                    <div class="news-popup">
+                        <div class="news-header">
+                            <img src="${country.flag}" class="popup-flag">
+                            <div class="popup-country">${country.name}</div>
+                        </div>
+                        <div class="loading">Loading latest news...</div>
+                    </div>
+                `);
+                markerMap[country.name].openPopup();
+            }
+            
+            // Fly to country on map
+            map.flyTo([country.lat, country.lng], 5, {
+                duration: 1.5
+            });
+            
+            // Fetch real news and update popup
+            setTimeout(async () => {
+                const articles = await getCountryNews(country.code);
+                const popupContent = createNewsPopup(country, articles);
+                
+                if (markerMap[country.name]) {
+                    markerMap[country.name].getPopup().setContent(popupContent);
+                }
+            }, 500);
+        });
+        
+        countryList.appendChild(li);
+    });
+}
+
+// Initial population
+populateCountryList();
+
+// Search functionality with debouncing
+let searchTimeout;
+const searchBox = document.getElementById('searchBox');
+searchBox.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        populateCountryList(e.target.value);
+    }, 300);
+});
+
+// Add country markers to map
+countries.forEach(country => {
+    const marker = L.marker([country.lat, country.lng]).addTo(map);
+    
+    // Initial popup content
+    const initialPopup = `
+        <div class="news-popup">
+            <div class="news-header">
+                <img src="${country.flag}" class="popup-flag">
+                <div class="popup-country">${country.name}</div>
+            </div>
+            <div class="loading">Click to load latest news</div>
+        </div>
+    `;
+    
+    marker.bindPopup(initialPopup);
+    markerMap[country.name] = marker;
+});
+
+// Map controls
+document.getElementById('resetView').addEventListener('click', () => {
+    map.flyTo([20, 0], 2, {
+        duration: 1.5
+    });
+});
+
+document.getElementById('toggleDarkMode').addEventListener('click', () => {
+    document.body.classList.toggle('light-mode');
+});
+
+// Update breaking news text periodically
+function updateBreakingNews() {
+    const breakingNewsText = document.getElementById('breakingNewsText');
+    const newsItems = [
+        "Breaking: Global news updates available",
+        "Live: News from 194 countries",
+        "Alert: Real-time headlines worldwide",
+        "Update: Latest stories from around the globe"
+    ];
+    const randomItem = newsItems[Math.floor(Math.random() * newsItems.length)];
+    breakingNewsText.textContent = randomItem;
+}
+
+setInterval(updateBreakingNews, 10000);
+
+// Smooth loading effect
+document.addEventListener('DOMContentLoaded', function() {
+    document.body.style.opacity = '0';
+    document.body.style.transition = 'opacity 0.5s ease';
+    setTimeout(() => {
+        document.body.style.opacity = '1';
+    }, 100);
+});
