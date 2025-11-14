@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Disease Insights Dashboard</title>
+    <link rel="stylesheet" href="disease.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Country Selection Panel -->
+        <div class="country-panel" id="countryPanel">
+            <div class="panel-header">
+                <h2 class="panel-title">GLOBAL DISEASE INSIGHTS</h2>
+                <p class="panel-subtitle">Comprehensive Health Data Analysis</p>
+                <div class="global-stats">
+                    <div class="global-stat">
+                        <span class="global-value" id="global-cases">-</span>
+                        <span class="global-label">Total Cases</span>
+                    </div>
+                    <div class="global-stat">
+                        <span class="global-value" id="global-deaths">-</span>
+                        <span class="global-label">Total Deaths</span>
+                    </div>
+                    <div class="global-stat">
+                        <span class="global-value" id="global-recovered">-</span>
+                        <span class="global-label">Recovered</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <input type="text" id="search-box" autocomplete="off" placeholder="Search country...">
+                <div class="sort-options">
+                    <button class="sort-btn active" data-sort="name">A-Z</button>
+                    <button class="sort-btn" data-sort="cases">Cases</button>
+                    <button class="sort-btn" data-sort="deaths">Deaths</button>
+                    <button class="sort-btn" data-sort="active">Active</button>
+                </div>
+            </div>
+            
+            <div class="countries-list" id="countriesList">
+                <div class="loader">
+                    <div class="spinner"></div>
+                    <div class="loader-text">Loading global health data...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard" id="dashboard">
+            <div class="country-header">
+                <button class="back-btn" id="back-btn">← BACK TO COUNTRIES</button>
+                <div class="country-info-header">
+                    <img class="country-flag" id="country-flag" src="" alt="">
+                    <div>
+                        <h2 class="country-title" id="country-title">Select a Country to View Insights</h2>
+                        <div class="last-updated" id="last-updated">
+                            <span class="live-indicator"></span>
+                            <span id="update-text">Data will load automatically</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-stats">
+                    <div class="header-stat">
+                        <span class="header-value" id="header-cases">-</span>
+                        <span class="header-label">Total Cases</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="header-value" id="header-deaths">-</span>
+                        <span class="header-label">Total Deaths</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="header-value" id="header-recovered">-</span>
+                        <span class="header-label">Recovered</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="header-value" id="header-active">-</span>
+                        <span class="header-label">Active Cases</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="dashboard-content">
+                <div class="loader">
+                    <div class="spinner"></div>
+                    <div class="loader-text">Select a country to view comprehensive health insights</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Update Notification -->
+    <div class="update-notification" id="updateNotification">
+        <span class="notification-text">Data Updated Successfully</span>
+        <span class="notification-time" id="notificationTime"></span>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="disease.js"></script>
+</body>
+</html>
